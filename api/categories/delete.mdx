@@ -1,0 +1,73 @@
+---
+title: "Delete Category"
+api: "DELETE /categoria/{id}"
+---
+
+Deletes a category by its ID.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the category to delete
+</ParamField>
+
+## Response
+
+Returns the deleted category object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the deleted category
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Category name
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Category description
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.example.com/categoria/1" \
+  -H "Content-Type: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.delete("https://api.example.com/categoria/1")
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/categoria/1', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 1,
+  "nombre": "Robo",
+  "descripcion": "Incidentes relacionados con robos y hurtos"
+}
+```
+
+```json 404 Not Found
+{
+  "detail": "Categoría no existe, no se pudo eliminar"
+}
+```
+
+</ResponseExample>

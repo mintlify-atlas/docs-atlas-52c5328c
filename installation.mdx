@@ -1,0 +1,526 @@
+---
+title: Installation
+description: Set up your Alerta Ciudadana API development environment with Python, FastAPI, and MySQL
+---
+
+## Overview
+
+This guide will walk you through setting up the Alerta Ciudadana API on your local development environment. You'll install dependencies, configure the database, and run the API server.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Python 3.8+** (recommended: Python 3.10 or higher)
+- **MySQL 8.0+** or **PostgreSQL 13+**
+- **Git** for cloning the repository
+- **pip** (Python package manager)
+- **virtualenv** or **venv** (recommended)
+
+<Note>
+  The API supports both MySQL and PostgreSQL databases. This guide uses MySQL, but you can adapt the connection strings for PostgreSQL.
+</Note>
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone the Repository">
+    First, clone the Alerta Ciudadana repository from your version control system.
+
+    ```bash
+    git clone https://github.com/your-org/alerta-ciudadana.git
+    cd alerta-ciudadana
+    ```
+
+    <Note>
+      Replace the URL with your actual repository location.
+    </Note>
+  </Step>
+
+  <Step title="Create a Virtual Environment">
+    Create and activate a Python virtual environment to isolate project dependencies.
+
+    <CodeGroup>
+
+    ```bash Linux/macOS
+    python -m venv venv
+    source venv/bin/activate
+    ```
+
+    ```bash Windows (CMD)
+    python -m venv venv
+    venv\Scripts\activate.bat
+    ```
+
+    ```bash Windows (PowerShell)
+    python -m venv venv
+    venv\Scripts\Activate.ps1
+    ```
+
+    </CodeGroup>
+
+    You should see `(venv)` in your terminal prompt, indicating the virtual environment is active.
+  </Step>
+
+  <Step title="Install Dependencies">
+    Install all required Python packages using pip.
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    **Key dependencies that will be installed:**
+
+    - `fastapi==0.115.8` - Web framework
+    - `uvicorn==0.34.0` - ASGI server
+    - `sqlalchemy==2.0.37` - ORM
+    - `pydantic==2.10.6` - Data validation
+    - `PyJWT==2.10.1` - JWT authentication
+    - `passlib==1.7.4` & `bcrypt==4.3.0` - Password hashing
+    - `scikit-learn==1.7.1` - Machine learning
+    - `pandas==2.3.1` & `numpy==2.3.2` - Data processing
+    - `mysql-connector-python==9.4.0` - MySQL driver
+    - `python-dotenv==1.0.1` - Environment variables
+
+    <Warning>
+      If you encounter errors installing `mysqlclient`, you may need to install MySQL development headers:
+      - **Ubuntu/Debian**: `sudo apt-get install python3-dev default-libmysqlclient-dev build-essential`
+      - **macOS**: `brew install mysql-client`
+      - **Windows**: Use binary wheels or install Visual C++ Build Tools
+    </Warning>
+  </Step>
+
+  <Step title="Configure the Database">
+    Create a MySQL database for the application.
+
+    ```sql Create Database
+    CREATE DATABASE bd_alertaciudadana CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER 'alerta_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+    GRANT ALL PRIVILEGES ON bd_alertaciudadana.* TO 'alerta_user'@'localhost';
+    FLUSH PRIVILEGES;
+    ```
+
+    <Note>
+      Replace `your_secure_password` with a strong password. Save these credentials for the next step.
+    </Note>
+  </Step>
+
+  <Step title="Set Up Environment Variables">
+    Create a `.env` file in the project root to store configuration securely.
+
+    ```bash .env
+    # Database Configuration
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=alerta_user
+    DB_PASSWORD=your_secure_password
+    DB_NAME=bd_alertaciudadana
+
+    # JWT Configuration
+    JWT_SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
+    JWT_ALGORITHM=HS256
+    JWT_EXPIRATION_MINUTES=60
+
+    # API Configuration
+    API_HOST=127.0.0.1
+    API_PORT=8000
+    DEBUG=True
+
+    # CORS Origins (comma-separated)
+    CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    ```
+
+    <Warning>
+      Never commit the `.env` file to version control. Add it to `.gitignore` to prevent accidental exposure of credentials.
+    </Warning>
+  </Step>
+
+  <Step title="Configure Database Connection">
+    Update the database configuration file to use environment variables.
+
+    The API uses SQLAlchemy for database connections. The configuration is typically in `src/config/db.py`:
+
+    ```python src/config/db.py
+    from sqlalchemy import create_engine
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+    import os
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
+    # Database URL
+    DB_USER = os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "3306")
+    DB_NAME = os.getenv("DB_NAME", "bd_alertaciudadana")
+
+    DATABASE_URL = f"mysql+mysqldb://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    engine = create_engine(DATABASE_URL, echo=True)
+    SesionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    base = declarative_base()
+
+    def get_db():
+        db = SesionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    ```
+
+    <Note>
+      For PostgreSQL, use: `postgresql+psycopg2://user:password@host:port/database`
+    </Note>
+  </Step>
+
+  <Step title="Initialize Database Tables">
+    Run the FastAPI application to automatically create database tables.
+
+    ```bash
+    python main.py
+    ```
+
+    The API uses SQLAlchemy's `create_all()` method (line 19 in `main.py`) to automatically generate tables from your models:
+
+    ```python
+    base.metadata.create_all(bind=engine)
+    ```
+
+    **Tables created:**
+    - `usuarios` - User accounts
+    - `incidentes` - Incident reports
+    - `categorias` - Incident categories
+    - `comentarios` - Comments on incidents
+
+    <Note>
+      The first run will create all tables. Subsequent runs will use the existing schema.
+    </Note>
+  </Step>
+
+  <Step title="Seed Sample Data (Optional)">
+    The API includes built-in seeders to generate sample data for testing.
+
+    ```bash Generate Sample Data
+    curl -X POST "http://localhost:8000/generar-datos/?usuarios=10&incidentes=20&comentarios=30"
+    ```
+
+    **Individual seeders:**
+
+    ```bash Users Only
+    curl -X POST "http://localhost:8000/generar-usuarios/?usuarios=10"
+    ```
+
+    ```bash Incidents Only
+    curl -X POST "http://localhost:8000/generar-incidentes/?incidentes=20"
+    ```
+
+    ```bash Comments Only
+    curl -X POST "http://localhost:8000/generar-comentarios/?comentarios=30"
+    ```
+
+    <Warning>
+      Seeders use stored procedures. Ensure your database user has `EXECUTE` permissions on procedures.
+    </Warning>
+  </Step>
+
+  <Step title="Run the Development Server">
+    Start the FastAPI development server with auto-reload enabled.
+
+    ```bash
+    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ```
+
+    **Alternative methods:**
+
+    <CodeGroup>
+
+    ```bash Using Python
+    python main.py
+    ```
+
+    ```bash With Custom Port
+    uvicorn main:app --reload --port 8080
+    ```
+
+    ```bash Production Mode (no reload)
+    uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    ```
+
+    </CodeGroup>
+
+    You should see output similar to:
+
+    ```
+    INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+    INFO:     Started reloader process [12345] using WatchFiles
+    INFO:     Started server process [12346]
+    INFO:     Waiting for application startup.
+    INFO:     Application startup complete.
+    ```
+  </Step>
+
+  <Step title="Verify Installation">
+    Test the API to ensure everything is working correctly.
+
+    **Check the welcome endpoint:**
+
+    ```bash
+    curl http://localhost:8000/
+    ```
+
+    **Expected response:**
+
+    ```json
+    {
+      "Bienvenido al Sistema de Alerta Ciudadana"
+    }
+    ```
+
+    **Access interactive API documentation:**
+
+    - **Swagger UI**: http://localhost:8000/docs
+    - **ReDoc**: http://localhost:8000/redoc
+
+    <Note>
+      The interactive documentation is automatically generated by FastAPI and allows you to test all endpoints directly in your browser.
+    </Note>
+  </Step>
+</Steps>
+
+## Project Structure
+
+Understanding the codebase organization:
+
+```
+alerta-ciudadana/
+├── main.py                           # Application entry point
+├── requirements.txt                  # Python dependencies
+├── .env                             # Environment variables (create this)
+├── .gitignore                       # Git ignore rules
+├── database.py                       # Database utilities
+├── portadortoken.py                  # JWT bearer token handler
+├── ml_prioridad.py                   # ML priority classification
+├── ml_nl_prioridad.py                # Critical zone detection (DBSCAN)
+├── src/
+│   ├── config/
+│   │   └── db.py                    # Database configuration
+│   ├── models/                       # SQLAlchemy ORM models
+│   │   ├── usuario.py               # User model
+│   │   ├── incidente.py             # Incident model
+│   │   ├── categoria.py             # Category model
+│   │   └── comentario.py            # Comment model
+│   ├── schemas/                      # Pydantic schemas
+│   │   ├── usuario.py               # User validation schemas
+│   │   ├── incidente.py             # Incident validation schemas
+│   │   ├── categoria.py             # Category validation schemas
+│   │   └── comentario.py            # Comment validation schemas
+│   ├── routes/                       # API endpoints
+│   │   ├── usuario.py               # User routes (register, login, CRUD)
+│   │   ├── incidente.py             # Incident routes
+│   │   ├── categoria.py             # Category routes
+│   │   └── comentario.py            # Comment routes
+│   ├── crud/                         # Database operations
+│   │   ├── usuario.py               # User CRUD operations
+│   │   ├── incidentes.py            # Incident CRUD operations
+│   │   ├── categoria.py             # Category CRUD operations
+│   │   └── comentario.py            # Comment CRUD operations
+│   ├── utils/
+│   │   └── jwt_utils.py             # JWT token generation/validation
+│   └── seeder/                       # Database seeders
+│       ├── seeder.py                # Main seeder
+│       ├── seeder_usuarios.py       # User seeder
+│       ├── seeder_incidentes.py     # Incident seeder
+│       └── seeder_comentarios.py    # Comment seeder
+└── tests/                            # Test suite
+    ├── conftest.py                  # Test configuration
+    ├── test_auth.py                 # Authentication tests
+    ├── test_usuarios.py             # User tests
+    ├── test_incidents.py            # Incident tests
+    └── test_main.py                 # Main API tests
+```
+
+## Configuration Options
+
+### FastAPI Configuration
+
+The main application is configured in `main.py`:
+
+```python main.py
+app = FastAPI(
+    title="Alerta Ciudadana",
+    description="API para el reporte y gestión de incidentes urbanos",
+)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # Configure for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+<Warning>
+  In production, replace `allow_origins=["*"]` with specific domains to prevent security vulnerabilities.
+</Warning>
+
+### JWT Configuration
+
+Configure JWT settings in your `.env` file:
+
+- `JWT_SECRET_KEY`: Secret key for signing tokens (use a strong random string)
+- `JWT_ALGORITHM`: Signing algorithm (default: HS256)
+- `JWT_EXPIRATION_MINUTES`: Token validity duration (default: 60)
+
+### Database Connection Pooling
+
+For production, configure connection pooling in SQLAlchemy:
+
+```python
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,              # Number of connections in the pool
+    max_overflow=20,           # Additional connections when pool is full
+    pool_pre_ping=True,        # Verify connections before use
+    pool_recycle=3600          # Recycle connections after 1 hour
+)
+```
+
+## Running Tests
+
+The project includes a comprehensive test suite using pytest.
+
+```bash Run All Tests
+pytest tests/ -v
+```
+
+**Run specific test files:**
+
+```bash
+pytest tests/test_auth.py -v
+pytest tests/test_incidents.py -v
+```
+
+**Run with coverage:**
+
+```bash
+pytest --cov=src tests/
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Database Connection Error">
+    **Error**: `sqlalchemy.exc.OperationalError: Can't connect to MySQL server`
+
+    **Solutions:**
+    - Verify MySQL is running: `systemctl status mysql` or `brew services list`
+    - Check credentials in `.env` file
+    - Ensure database exists: `mysql -u root -p -e "SHOW DATABASES;"`
+    - Verify firewall rules allow connections on port 3306
+  </Accordion>
+
+  <Accordion title="Import Errors">
+    **Error**: `ModuleNotFoundError: No module named 'fastapi'`
+
+    **Solutions:**
+    - Ensure virtual environment is activated
+    - Reinstall dependencies: `pip install -r requirements.txt`
+    - Verify Python version: `python --version`
+  </Accordion>
+
+  <Accordion title="JWT Token Errors">
+    **Error**: `JWTError: Signature verification failed`
+
+    **Solutions:**
+    - Ensure `JWT_SECRET_KEY` is set in `.env`
+    - Use the same secret key across all instances
+    - Check token hasn't expired (verify `JWT_EXPIRATION_MINUTES`)
+  </Accordion>
+
+  <Accordion title="CORS Errors">
+    **Error**: `Access to fetch has been blocked by CORS policy`
+
+    **Solutions:**
+    - Add your frontend URL to `allow_origins` in `main.py`
+    - Configure `CORS_ORIGINS` in `.env`
+    - Verify middleware is properly configured
+  </Accordion>
+
+  <Accordion title="Port Already in Use">
+    **Error**: `ERROR: [Errno 48] Address already in use`
+
+    **Solutions:**
+    - Kill the process using port 8000: `lsof -ti:8000 | xargs kill -9`
+    - Use a different port: `uvicorn main:app --port 8080`
+  </Accordion>
+</AccordionGroup>
+
+## Production Deployment
+
+For production deployment, consider the following:
+
+### Security
+
+- Use strong, randomly generated `JWT_SECRET_KEY`
+- Enable HTTPS/TLS encryption
+- Configure specific CORS origins
+- Use environment-specific configuration
+- Implement rate limiting
+- Enable database connection encryption
+
+### Performance
+
+- Use production ASGI server (Gunicorn + Uvicorn workers)
+- Enable database connection pooling
+- Configure caching (Redis)
+- Use a reverse proxy (Nginx)
+- Enable gzip compression
+
+### Monitoring
+
+- Set up logging (Python logging module)
+- Configure error tracking (Sentry)
+- Monitor database performance
+- Track API metrics and uptime
+
+<Warning>
+  The current database configuration in `ml_prioridad.py` contains hardcoded credentials. Replace these with environment variables before deploying to production.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Make your first API calls and learn the basic workflow
+  </Card>
+  
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    Understand the system architecture and design
+  </Card>
+  
+  <Card title="Authentication" icon="shield" href="/concepts/authentication">
+    Learn about JWT authentication and security
+  </Card>
+  
+  <Card title="ML Features" icon="brain" href="/ml/priority-classification">
+    Explore machine learning capabilities
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+If you encounter issues not covered in this guide:
+
+- Check the [GitHub Issues](https://github.com/your-org/alerta-ciudadana/issues)
+- Review the [API Documentation](http://localhost:8000/docs)
+- Contact the development team
+
+<Note>
+  The FastAPI interactive documentation at `/docs` is your best resource for understanding available endpoints and testing the API.
+</Note>

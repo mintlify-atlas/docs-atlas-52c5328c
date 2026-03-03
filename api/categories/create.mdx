@@ -1,0 +1,107 @@
+---
+title: "Create Category"
+api: "POST /categoria/"
+---
+
+Creates a new incident category.
+
+## Request Body
+
+<ParamField body="nombre" type="string" required>
+  Category name (max 100 characters). Must be unique.
+  
+  Examples: "Robo", "Fuga de agua", "Bache"
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Category description (max 255 characters)
+</ParamField>
+
+## Response
+
+Returns the created category object with its assigned ID.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created category
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Category name
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Category description
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.example.com/categoria/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Alumbrado público",
+    "descripcion": "Problemas con el alumbrado en calles y espacios públicos"
+  }'
+```
+
+```python Python
+import requests
+
+data = {
+    "nombre": "Alumbrado público",
+    "descripcion": "Problemas con el alumbrado en calles y espacios públicos"
+}
+
+response = requests.post(
+    "https://api.example.com/categoria/",
+    json=data
+)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/categoria/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    nombre: 'Alumbrado público',
+    descripcion: 'Problemas con el alumbrado en calles y espacios públicos'
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 4,
+  "nombre": "Alumbrado público",
+  "descripcion": "Problemas con el alumbrado en calles y espacios públicos"
+}
+```
+
+```json 400 Bad Request
+{
+  "detail": "Category name already exists"
+}
+```
+
+```json 422 Validation Error
+{
+  "detail": [
+    {
+      "loc": ["body", "nombre"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+</ResponseExample>

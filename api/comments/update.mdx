@@ -1,0 +1,183 @@
+---
+title: "Update Comment"
+api: "PUT /comentario/{id}"
+description: "Update an existing comment"
+---
+
+## Endpoint
+
+```
+PUT /comentario/{id}
+```
+
+Updates an existing comment. All fields in the request body are required and will replace the current values.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the comment to update
+</ParamField>
+
+## Request Body
+
+The request body should contain a JSON object with all the following fields:
+
+<ParamField body="contenido" type="string" required>
+  The updated content/text of the comment. Maximum length: 500 characters
+</ParamField>
+
+<ParamField body="usuario_id" type="integer" required>
+  ID of the user. Must reference an existing user in the `usuarios` table
+</ParamField>
+
+<ParamField body="incidente_id" type="integer" required>
+  ID of the incident this comment belongs to. Must reference an existing incident in the `incidentes` table
+</ParamField>
+
+## Response
+
+Returns the updated comment object.
+
+<ResponseField name="id" type="integer" required>
+  Unique identifier for the comment (unchanged)
+</ResponseField>
+
+<ResponseField name="contenido" type="string" required>
+  The updated content/text of the comment
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer" required>
+  ID of the user (can be updated)
+</ResponseField>
+
+<ResponseField name="incidente_id" type="integer" required>
+  ID of the incident (can be updated)
+</ResponseField>
+
+<ResponseField name="fecha" type="datetime" required>
+  Original creation timestamp (unchanged)
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X PUT "https://api.example.com/comentario/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contenido": "Actualización: La situación ha sido resuelta completamente",
+    "usuario_id": 5,
+    "incidente_id": 12
+  }'
+```
+
+```python Python
+import requests
+
+data = {
+    "contenido": "Actualización: La situación ha sido resuelta completamente",
+    "usuario_id": 5,
+    "incidente_id": 12
+}
+
+response = requests.put(
+    "https://api.example.com/comentario/1",
+    json=data
+)
+comment = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.example.com/comentario/1',
+  {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contenido: 'Actualización: La situación ha sido resuelta completamente',
+      usuario_id: 5,
+      incidente_id: 12
+    })
+  }
+);
+const comment = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+<ResponseExample>
+```json 200 - Success
+{
+  "id": 1,
+  "contenido": "Actualización: La situación ha sido resuelta completamente",
+  "usuario_id": 5,
+  "incidente_id": 12,
+  "fecha": "2026-03-01T14:30:00Z"
+}
+```
+
+```json 404 - Not Found
+{
+  "detail": "Comentario no existe, no actualizado"
+}
+```
+
+```json 422 - Validation Error
+{
+  "detail": [
+    {
+      "loc": ["body", "contenido"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="error">
+  Comment not found - returned when the specified ID doesn't exist
+  
+  ```json
+  {
+    "detail": "Comentario no existe, no actualizado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="422" type="error">
+  Validation Error - returned when required fields are missing or invalid
+  
+  ```json
+  {
+    "detail": [
+      {
+        "loc": ["body", "contenido"],
+        "msg": "field required",
+        "type": "value_error.missing"
+      }
+    ]
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Foreign Key Constraint - returned when referenced `usuario_id` or `incidente_id` doesn't exist
+</ResponseField>
+
+## Relationships
+
+- **usuario_id**: Must reference an existing user in the `usuarios` table
+- **incidente_id**: Must reference an existing incident in the `incidentes` table
+
+## Notes
+
+- All fields are required in the request body (this is a full update, not a partial update)
+- The `id` field cannot be changed
+- The `fecha` field is not updated when the comment is modified
+- The `contenido` field has a maximum length of 500 characters

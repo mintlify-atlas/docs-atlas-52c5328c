@@ -1,0 +1,150 @@
+---
+title: 'List Incidents'
+api: 'GET /incidentes/'
+description: 'Retrieve a paginated list of all incidents'
+---
+
+## Endpoint
+
+```
+GET /incidentes/
+```
+
+Retrieves a paginated list of all incidents in the system. Supports pagination through query parameters.
+
+## Query Parameters
+
+<ParamField query="skip" type="integer" default="0">
+  Number of incidents to skip (for pagination)
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Maximum number of incidents to return (for pagination)
+</ParamField>
+
+## Authentication
+
+<Note>
+  Authentication is currently commented out in the source code but may be required in production. The endpoint would require a valid bearer token when authentication is enabled.
+</Note>
+
+## Response
+
+Returns an array of incident objects.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the incident
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the incident (max 100 characters)
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Detailed description of the incident (max 500 characters)
+</ResponseField>
+
+<ResponseField name="imagen" type="string" optional>
+  URL or filename of the incident image
+</ResponseField>
+
+<ResponseField name="latitud" type="float">
+  Latitude coordinate of the incident location
+</ResponseField>
+
+<ResponseField name="longitud" type="float">
+  Longitude coordinate of the incident location
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current status of the incident. Possible values:
+  - `pendiente` - Pending review
+  - `en revisión` - Under review
+  - `atendido` - Resolved/Attended
+  - `descartado` - Dismissed
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Timestamp when the incident was reported (UTC)
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer">
+  ID of the user who reported the incident
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the incident category
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8000/incidentes/?skip=0&limit=10" \
+  -H "Accept: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "http://localhost:8000/incidentes/",
+    params={"skip": 0, "limit": 10}
+)
+incidents = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'http://localhost:8000/incidentes/?skip=0&limit=10',
+  {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json'
+    }
+  }
+);
+const incidents = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Bache peligroso en Av. Principal",
+    "descripcion": "Hay un bache grande que puede causar accidentes",
+    "imagen": "incidente_001.jpg",
+    "latitud": -12.046374,
+    "longitud": -77.042793,
+    "estado": "pendiente",
+    "fecha_reporte": "2026-03-03T10:30:00",
+    "usuario_id": 5,
+    "categoria_id": 2
+  },
+  {
+    "id": 2,
+    "titulo": "Alumbrado público dañado",
+    "descripcion": "Las luces de la calle no funcionan desde hace una semana",
+    "imagen": null,
+    "latitud": -12.050000,
+    "longitud": -77.045000,
+    "estado": "en revisión",
+    "fecha_reporte": "2026-03-02T15:45:00",
+    "usuario_id": 8,
+    "categoria_id": 3
+  }
+]
+```
+
+## Status Codes
+
+<ResponseField name="200" type="Success">
+  Returns array of incident objects
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid query parameters
+</ResponseField>

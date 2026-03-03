@@ -1,0 +1,109 @@
+---
+title: "Get Comment"
+api: "GET /comentario/{id}"
+description: "Retrieve a specific comment by ID"
+---
+
+## Endpoint
+
+```
+GET /comentario/{id}
+```
+
+Retrieves detailed information about a specific comment by its unique identifier.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the comment to retrieve
+</ParamField>
+
+## Response
+
+Returns a single comment object.
+
+<ResponseField name="id" type="integer" required>
+  Unique identifier for the comment
+</ResponseField>
+
+<ResponseField name="contenido" type="string" required>
+  The content/text of the comment (max 500 characters)
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer" required>
+  ID of the user who created the comment. References `usuarios.id`
+</ResponseField>
+
+<ResponseField name="incidente_id" type="integer" required>
+  ID of the incident this comment belongs to. References `incidentes.id`
+</ResponseField>
+
+<ResponseField name="fecha" type="datetime" required>
+  Timestamp when the comment was created (UTC)
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://api.example.com/comentario/1" \
+  -H "Content-Type: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://api.example.com/comentario/1")
+comment = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.example.com/comentario/1',
+  {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+);
+const comment = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+<ResponseExample>
+```json 200 - Success
+{
+  "id": 1,
+  "contenido": "Reporté este incidente hace 2 días y aún no hay respuesta",
+  "usuario_id": 5,
+  "incidente_id": 12,
+  "fecha": "2026-03-01T14:30:00Z"
+}
+```
+
+```json 404 - Not Found
+{
+  "detail": "Comentario no encontrado"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="error">
+  Comment not found - returned when the specified ID doesn't exist
+  
+  ```json
+  {
+    "detail": "Comentario no encontrado"
+  }
+  ```
+</ResponseField>
+
+## Relationships
+
+- **usuario_id**: References the `usuarios` table. Each comment is associated with one user (the author).
+- **incidente_id**: References the `incidentes` table. Each comment belongs to one incident.

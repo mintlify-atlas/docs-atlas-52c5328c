@@ -1,0 +1,97 @@
+---
+title: "Delete User"
+api: "DELETE /usuario/{id}"
+description: "Delete a user from the system"
+---
+
+## Authentication
+
+This endpoint requires JWT authentication. Include a valid bearer token in the Authorization header.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the user to delete
+</ParamField>
+
+## Response
+
+Returns the deleted user object for confirmation.
+
+<ResponseField name="id" type="integer">
+  Unique identifier of the deleted user
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Name of the deleted user
+</ResponseField>
+
+<ResponseField name="correo_electronico" type="string">
+  Email address of the deleted user
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  Role of the deleted user
+</ResponseField>
+
+<ResponseField name="fecha_creacion" type="string">
+  ISO 8601 datetime when the user was created
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE "https://api.example.com/usuario/1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/usuario/1"
+headers = {
+    "Authorization": "Bearer YOUR_JWT_TOKEN"
+}
+
+response = requests.delete(url, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/usuario/1', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "correo_electronico": "juan@example.com",
+  "rol": "ciudadano",
+  "fecha_creacion": "2024-01-15T10:30:00"
+}
+```
+
+```json 401 Unauthorized
+{
+  "detail": "Not authenticated"
+}
+```
+
+```json 404 Not Found
+{
+  "detail": "Usuario no existe, no se pudo eliminar"
+}
+```
+
+</ResponseExample>

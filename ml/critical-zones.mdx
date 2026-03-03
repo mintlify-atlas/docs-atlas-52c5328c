@@ -1,0 +1,353 @@
+---
+title: 'Critical Zones Detection'
+description: 'DBSCAN clustering algorithm for detecting high-incident concentration areas'
+---
+
+## Overview
+
+The critical zones detection system uses the DBSCAN (Density-Based Spatial Clustering of Applications with Noise) algorithm to identify geographic areas with high concentrations of incidents. This helps authorities prioritize resource allocation and identify problem areas in the city.
+
+## DBSCAN Algorithm
+
+DBSCAN is a density-based clustering algorithm that groups together points that are closely packed together, marking points in low-density regions as outliers. It's particularly effective for geographic data analysis.
+
+### Why DBSCAN?
+
+- **No Need to Specify Number of Clusters**: Unlike K-means, DBSCAN automatically determines the number of clusters
+- **Handles Arbitrary Shapes**: Can find clusters of any shape, not just circular
+- **Identifies Noise**: Points that don't belong to any cluster are marked as outliers
+- **Density-Based**: Perfect for geographic data where incidents cluster in certain areas
+
+## Algorithm Parameters
+
+The system uses two key parameters for DBSCAN clustering:
+
+### Epsilon (eps)
+
+The maximum distance between two points to be considered neighbors. The system calculates this value automatically using the k-nearest neighbors approach.
+
+#### Automatic Eps Calculation
+
+```python
+# Calculate eps automatically using nearest neighbor distances
+neigh = NearestNeighbors(n_neighbors=2)
+neigh.fit(coords)
+distances, _ = neigh.kneighbors(coords)
+
+# Use the second neighbor distance (first is always 0)
+distancias = np.sort(distances[:, 1])
+
+# Take the 90th percentile as eps
+eps_auto = np.percentile(distancias, 90)
+```
+
+**Calculation Steps:**
+1. Fit a NearestNeighbors model with k=2
+2. Find the distance to the 2nd nearest neighbor for each point
+3. Sort these distances in ascending order
+4. Select the 90th percentile as the epsilon value
+
+**Why 90th percentile?**
+- Captures most point-to-point distances
+- Filters out extreme outliers
+- Adjustable based on data distribution
+
+### Minimum Samples (min_samples)
+
+The minimum number of points required to form a dense region (cluster).
+
+```python
+min_samples=2
+```
+
+**Configuration:**
+- **Value**: 2 points
+- **Rationale**: Two or more incidents in close proximity indicate a potential problem area
+- **Effect**: Lower values create more clusters; higher values require more density
+
+### Distance Metric
+
+```python
+metric="euclidean"
+```
+
+- **Euclidean Distance**: Straight-line distance between two geographic coordinates
+- **Formula**: √[(lat₂-lat₁)² + (lng₂-lng₁)²]
+- **Appropriate for**: Small geographic areas where Earth's curvature is negligible
+
+## API Endpoint
+
+### Detect Critical Zones
+
+Analyze all incidents and identify geographic clusters representing critical zones.
+
+```http
+GET /ml/zonas-criticas
+```
+
+#### Response Structure
+
+```json
+{
+  "total_incidentes": 45,
+  "eps_usado": 0.0023,
+  "total_zonas": 3,
+  "zonas_criticas": [
+    {
+      "zona_id": 0,
+      "cantidad_incidentes": 12,
+      "lat_centro": -12.0464,
+      "lng_centro": -77.0428
+    },
+    {
+      "zona_id": 1,
+      "cantidad_incidentes": 8,
+      "lat_centro": -12.0521,
+      "lng_centro": -77.0365
+    },
+    {
+      "zona_id": 2,
+      "cantidad_incidentes": 6,
+      "lat_centro": -12.0489,
+      "lng_centro": -77.0512
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_incidentes` | integer | Total number of incidents analyzed |
+| `eps_usado` | float | The epsilon value automatically calculated and used for clustering |
+| `total_zonas` | integer | Number of critical zones detected |
+| `zonas_criticas` | array | List of detected critical zones |
+| `zona_id` | integer | Unique identifier for the cluster |
+| `cantidad_incidentes` | integer | Number of incidents in this zone |
+| `lat_centro` | float | Latitude coordinate of the zone's center point |
+| `lng_centro` | float | Longitude coordinate of the zone's center point |
+
+#### No Incidents Case
+
+```json
+{
+  "message": "No hay incidentes registrados"
+}
+```
+
+## Processing Pipeline
+
+The critical zones detection follows these steps:
+
+### 1. Data Retrieval
+
+```python
+incidentes = db.query(Incidente).all()
+if not incidentes:
+    return {"message": "No hay incidentes registrados"}
+```
+
+Fetch all incidents from the database using SQLAlchemy ORM.
+
+### 2. DataFrame Creation
+
+```python
+data = pd.DataFrame([{
+    "id": i.id,
+    "descripcion": i.descripcion,
+    "lat": i.latitud,
+    "lng": i.longitud
+} for i in incidentes])
+
+coords = data[["lat", "lng"]].to_numpy()
+```
+
+Convert incidents to a pandas DataFrame and extract coordinate pairs as a NumPy array.
+
+### 3. Automatic Eps Calculation
+
+```python
+neigh = NearestNeighbors(n_neighbors=2)
+neigh.fit(coords)
+distances, _ = neigh.kneighbors(coords)
+distancias = np.sort(distances[:, 1])
+eps_auto = np.percentile(distancias, 90)
+```
+
+Dynamically calculate the optimal epsilon value based on the data distribution.
+
+### 4. DBSCAN Clustering
+
+```python
+clustering = DBSCAN(eps=eps_auto, min_samples=2, metric="euclidean").fit(coords)
+data["cluster"] = clustering.labels_
+```
+
+Apply DBSCAN algorithm to identify clusters. Points are assigned cluster IDs, with `-1` indicating noise/outliers.
+
+### 5. Zone Aggregation
+
+```python
+zonas = []
+for cluster_id in set(clustering.labels_):
+    if cluster_id == -1:
+        continue
+    grupo = data[data["cluster"] == cluster_id]
+    
+    lat_centro = grupo["lat"].mean()
+    lng_centro = grupo["lng"].mean()
+    
+    zonas.append({
+        "zona_id": int(cluster_id),
+        "cantidad_incidentes": len(grupo),
+        "lat_centro": float(lat_centro),
+        "lng_centro": float(lng_centro)
+    })
+```
+
+For each cluster, calculate:
+- Cluster ID
+- Total incident count
+- Geographic center (centroid) using mean latitude and longitude
+
+### 6. Response Construction
+
+```python
+return {
+    "total_incidentes": len(data),
+    "eps_usado": float(eps_auto),
+    "total_zonas": len(zonas),
+    "zonas_criticas": zonas
+}
+```
+
+Return structured JSON with clustering results and metadata.
+
+## Cluster Interpretation
+
+### Cluster Labels
+
+- **Positive integers (0, 1, 2, ...)**: Valid clusters representing critical zones
+- **-1**: Noise points (isolated incidents not belonging to any cluster)
+
+### Center Point Calculation
+
+The center of each zone is calculated as the arithmetic mean of all coordinates in the cluster:
+
+```python
+lat_centro = mean(all latitudes in cluster)
+lng_centro = mean(all longitudes in cluster)
+```
+
+This represents the geographic centroid of the critical zone.
+
+## Use Cases
+
+### Resource Allocation
+
+Identify where to deploy:
+- Police patrols
+- Emergency response units
+- Municipal services
+- Surveillance cameras
+
+### Urban Planning
+
+Analyze patterns for:
+- Infrastructure improvements
+- Lighting installation
+- Public safety measures
+- Community programs
+
+### Trend Analysis
+
+Combine with temporal data to:
+- Track how critical zones change over time
+- Evaluate intervention effectiveness
+- Predict future problem areas
+- Plan preventive measures
+
+## Visualization Example
+
+The output can be directly used with mapping libraries:
+
+```javascript
+// Example: Plotting zones on a map using Leaflet or Google Maps
+zonas_criticas.forEach(zona => {
+  const marker = new google.maps.Marker({
+    position: { lat: zona.lat_centro, lng: zona.lng_centro },
+    map: map,
+    title: `Zona ${zona.zona_id}: ${zona.cantidad_incidentes} incidentes`
+  });
+  
+  // Add circle to show zone area
+  const circle = new google.maps.Circle({
+    center: { lat: zona.lat_centro, lng: zona.lng_centro },
+    radius: eps_usado * 111320, // Convert degrees to meters
+    fillColor: '#FF0000',
+    fillOpacity: 0.35,
+    strokeWeight: 0
+  });
+});
+```
+
+## Performance Considerations
+
+### Computational Complexity
+
+- **DBSCAN**: O(n log n) with spatial indexing
+- **NearestNeighbors**: O(n log n) for k-d tree construction
+- **Overall**: Efficient for thousands of incidents
+
+### Optimization Tips
+
+1. **Caching**: Cache results and refresh periodically rather than computing on every request
+2. **Filtering**: Consider only recent incidents (e.g., last 30 days)
+3. **Geographic Bounds**: Limit analysis to specific city areas
+4. **Indexing**: Ensure database has spatial indexes on latitude/longitude columns
+
+## Tuning Parameters
+
+Adjust these values based on your use case:
+
+### Percentile for Eps
+
+```python
+eps_auto = np.percentile(distancias, 90)  # Change 90 to tune
+```
+
+- **Lower (e.g., 75)**: Smaller zones, more clusters
+- **Higher (e.g., 95)**: Larger zones, fewer clusters
+
+### Minimum Samples
+
+```python
+min_samples=2  # Change to tune
+```
+
+- **Lower (e.g., 2)**: More sensitive, detects smaller clusters
+- **Higher (e.g., 5)**: Requires more density, fewer but more significant clusters
+
+## Source Code Reference
+
+The critical zones detection implementation can be found in:
+- `/workspace/source/ml_nl_prioridad.py` - DBSCAN clustering logic
+- `/workspace/source/main.py:75` - Router integration with `/ml` prefix
+
+## Dependencies
+
+Required Python packages:
+
+```python
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors
+import numpy as np
+import pandas as pd
+```
+
+Install with:
+
+```bash
+pip install scikit-learn numpy pandas
+```

@@ -1,0 +1,111 @@
+---
+title: "Update Category"
+api: "PUT /categoria/{id}"
+---
+
+Updates an existing category by its ID.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the category to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="nombre" type="string" required>
+  Updated category name (max 100 characters). Must be unique.
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Updated category description (max 255 characters)
+</ParamField>
+
+## Response
+
+Returns the updated category object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the category
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Updated category name
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Updated category description
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT "https://api.example.com/categoria/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Robo y asalto",
+    "descripcion": "Incidentes relacionados con robos, hurtos y asaltos"
+  }'
+```
+
+```python Python
+import requests
+
+data = {
+    "nombre": "Robo y asalto",
+    "descripcion": "Incidentes relacionados con robos, hurtos y asaltos"
+}
+
+response = requests.put(
+    "https://api.example.com/categoria/1",
+    json=data
+)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/categoria/1', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    nombre: 'Robo y asalto',
+    descripcion: 'Incidentes relacionados con robos, hurtos y asaltos'
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 1,
+  "nombre": "Robo y asalto",
+  "descripcion": "Incidentes relacionados con robos, hurtos y asaltos"
+}
+```
+
+```json 404 Not Found
+{
+  "detail": "Categoría no existe, no actualizada"
+}
+```
+
+```json 422 Validation Error
+{
+  "detail": [
+    {
+      "loc": ["body", "nombre"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+</ResponseExample>

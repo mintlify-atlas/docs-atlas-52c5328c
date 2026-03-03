@@ -1,0 +1,124 @@
+---
+title: 'Generate Test Incidents'
+api: 'POST /generar-incidentes/'
+description: 'Generate random test incidents for development and testing'
+---
+
+## Overview
+
+This endpoint generates random test incidents with realistic geographic coordinates, descriptions, and metadata. Incidents are created with varied types, locations, and statuses to simulate real-world scenarios.
+
+## Use Cases
+
+- **ML model training**: Generate datasets for testing machine learning algorithms like critical zone detection
+- **Map visualization testing**: Create incidents across different geographic areas to test mapping features
+- **Performance testing**: Generate large numbers of incidents to test query performance
+- **Feature development**: Populate development environments with incident data
+
+## Query Parameters
+
+<ParamField query="incidentes" type="integer" default="10">
+  Number of random incidents to generate
+</ParamField>
+
+## Request
+
+<CodeGroup>
+
+```bash cURL - Default
+curl -X POST "https://api.alertaciudadana.com/generar-incidentes/"
+```
+
+```bash cURL - Custom Count
+curl -X POST "https://api.alertaciudadana.com/generar-incidentes/?incidentes=100"
+```
+
+```python Python
+import requests
+
+# Generate 10 incidents (default)
+response = requests.post("https://api.alertaciudadana.com/generar-incidentes/")
+
+# Generate custom number of incidents
+response = requests.post(
+    "https://api.alertaciudadana.com/generar-incidentes/",
+    params={"incidentes": 100}
+)
+result = response.json()
+print(result["mensaje"])
+```
+
+```javascript JavaScript
+// Generate 10 incidents (default)
+fetch('https://api.alertaciudadana.com/generar-incidentes/', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Generate custom number of incidents
+fetch('https://api.alertaciudadana.com/generar-incidentes/?incidentes=100', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</CodeGroup>
+
+## Response
+
+<ResponseField name="mensaje" type="string">
+  Success message from the stored procedure or a default confirmation message
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if the operation fails (only present on error)
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "mensaje": "✔ 100 incidentes insertados exitosamente"
+}
+```
+
+```json 500 - Error
+{
+  "error": "Foreign key constraint failed: invalid user_id"
+}
+```
+
+</ResponseExample>
+
+## Implementation Details
+
+The endpoint:
+
+1. Calls the `sp_insertar_incidentes_aleatorios` stored procedure
+2. Generates the specified number of incidents with randomized attributes
+3. Associates incidents with existing users and categories
+4. Assigns geographic coordinates within valid ranges
+5. Commits changes in a single transaction
+
+## Generated Incident Data
+
+Each generated incident includes:
+
+- **Description**: Realistic incident description
+- **Category**: Random category from available incident types
+- **Location**: Latitude and longitude coordinates
+- **Reporter**: Associated with an existing user
+- **Status**: Initial status (typically "Pendiente" or "Abierto")
+- **Timestamp**: Creation date and time
+- **Media**: Optional image or video references
+
+## Notes
+
+- Incidents require existing users in the database to assign as reporters
+- Geographic coordinates are generated within valid ranges for the service area
+- All operations are performed in a single database transaction
+- If the operation fails, all changes are rolled back
+- Generated incidents can be used immediately with ML endpoints like `/ml/zonas-criticas`
+- For comprehensive data generation, use `/generar-datos/` to create users, incidents, and comments together

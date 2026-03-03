@@ -1,0 +1,183 @@
+---
+title: 'Priority Classification'
+description: 'ML-based incident priority classification using keyword matching and TF-IDF'
+---
+
+## Overview
+
+The priority classification system automatically assigns priority levels to incidents based on the content of their descriptions. The system uses a keyword matching algorithm to categorize incidents into three priority levels: **alta** (high), **media** (medium), and **baja** (low).
+
+## Priority Levels
+
+The system recognizes three priority levels based on the severity and urgency of the incident:
+
+| Priority | Description | Use Case |
+|----------|-------------|----------|
+| **alta** | High priority - requires immediate attention | Emergency situations, security threats, accidents |
+| **media** | Medium priority - needs attention soon | Environmental issues, infrastructure problems |
+| **baja** | Low priority - can be addressed later | Minor disturbances, non-urgent complaints |
+
+## Keyword Matching Algorithm
+
+The classification system uses a simple yet effective keyword-based approach. Each incident description is analyzed for the presence of specific keywords that indicate the severity level.
+
+### Priority Keywords
+
+The system maintains a predefined dictionary of keywords for each priority level:
+
+```python
+palabras_prioridad = {
+    "alta": ["humo", "incendio", "arma", "robo", "accidente", "caer"],
+    "media": ["ruido", "contaminación", "basura", "luz"],
+    "baja": ["vecinos", "madrugada", "música"]
+}
+```
+
+#### High Priority Keywords (alta)
+- **humo** - Smoke (potential fire hazard)
+- **incendio** - Fire
+- **arma** - Weapon
+- **robo** - Robbery/theft
+- **accidente** - Accident
+- **caer** - Fall (person or object)
+
+#### Medium Priority Keywords (media)
+- **ruido** - Noise
+- **contaminación** - Pollution
+- **basura** - Trash/garbage
+- **luz** - Light (lighting issues)
+
+#### Low Priority Keywords (baja)
+- **vecinos** - Neighbors
+- **madrugada** - Early morning/late night
+- **música** - Music
+
+## Classification Process
+
+The system follows a hierarchical matching approach:
+
+1. **Text Normalization**: Convert the incident description to lowercase
+2. **High Priority Check**: Search for high priority keywords first
+3. **Medium Priority Check**: If no high priority keywords found, search for medium priority keywords
+4. **Default Assignment**: If no keywords match, assign low priority by default
+
+```python
+def asignar_prioridad(texto):
+    texto = texto.lower()
+    for palabra in palabras_prioridad["alta"]:
+        if palabra in texto:
+            return "alta"
+    for palabra in palabras_prioridad["media"]:
+        if palabra in texto:
+            return "media"
+    return "baja"
+```
+
+### Algorithm Characteristics
+
+- **Hierarchical**: Checks high priority first, then medium, then defaults to low
+- **First Match Wins**: Returns immediately upon finding the first matching keyword
+- **Case Insensitive**: All text is converted to lowercase before matching
+- **Substring Matching**: Keywords can be found anywhere in the description
+
+## API Endpoint
+
+### Get Incidents with Priority
+
+Retrieve all incidents with automatically assigned priority classifications.
+
+```http
+GET /incidentes_prioridad
+```
+
+#### Response Example
+
+```json
+[
+  {
+    "id": 1,
+    "descripcion": "Hay humo saliendo de un edificio",
+    "fecha_reporte": "2024-03-15T10:30:00",
+    "prioridad": "alta"
+  },
+  {
+    "id": 2,
+    "descripcion": "Mucha basura acumulada en la esquina",
+    "fecha_reporte": "2024-03-15T11:45:00",
+    "prioridad": "media"
+  },
+  {
+    "id": 3,
+    "descripcion": "Los vecinos hacen música muy tarde",
+    "fecha_reporte": "2024-03-15T12:00:00",
+    "prioridad": "baja"
+  }
+]
+```
+
+## Implementation Details
+
+### Data Flow
+
+1. **Database Query**: Fetch incidents from the MySQL database
+2. **DataFrame Creation**: Load data into a pandas DataFrame for processing
+3. **Priority Assignment**: Apply the classification function to each description
+4. **Result Return**: Convert DataFrame to JSON format for API response
+
+```python
+def procesar_incidentes():
+    df = obtener_incidentes()
+    df["prioridad"] = df["descripcion"].apply(asignar_prioridad)
+    return df
+```
+
+### Database Connection
+
+The system connects to the MySQL database to retrieve incident data:
+
+```python
+def obtener_incidentes():
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Robertin06",
+        database="bd_alertaciudadana"
+    )
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, descripcion, fecha_reporte FROM incidentes")
+    data = cursor.fetchall()
+    conn.close()
+    return pd.DataFrame(data, columns=["id", "descripcion", "fecha_reporte"])
+```
+
+## Use Cases
+
+### Example Classifications
+
+| Description | Detected Keyword | Priority |
+|-------------|------------------|----------|
+| "Hay un incendio en el parque" | incendio | alta |
+| "Vi a alguien con un arma" | arma | alta |
+| "Hubo un accidente de tráfico" | accidente | alta |
+| "Hay mucha basura en la calle" | basura | media |
+| "Contaminación del aire" | contaminación | media |
+| "Ruido excesivo de construcción" | ruido | media |
+| "Los vecinos están molestos" | vecinos | baja |
+| "Música alta en la madrugada" | música, madrugada | baja |
+| "Problema con el alumbrado" | luz | media |
+
+## Future Enhancements
+
+While the current implementation uses keyword matching, the system is prepared for future ML enhancements:
+
+- **TF-IDF Vectorization**: The code imports `TfidfVectorizer` from scikit-learn, indicating plans for more sophisticated text analysis
+- **Machine Learning Models**: Could be extended to use trained classifiers for more accurate predictions
+- **Multi-language Support**: Add keyword dictionaries for other languages
+- **Context Analysis**: Consider surrounding words and phrases for better accuracy
+- **Dynamic Keywords**: Allow administrators to add or modify keywords through the API
+
+## Source Code Reference
+
+The priority classification implementation can be found in:
+- `/workspace/source/ml_prioridad.py` - Core classification logic
+- `/workspace/source/main.py:26` - API endpoint integration

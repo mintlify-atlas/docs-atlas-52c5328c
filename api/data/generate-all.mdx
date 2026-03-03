@@ -1,0 +1,130 @@
+---
+title: 'Generate All Test Data'
+api: 'POST /generar-datos/'
+description: 'Generate test users, incidents, and comments in a single operation'
+---
+
+## Overview
+
+This endpoint generates complete test datasets for the Alerta Ciudadana system in a single operation. It creates users, incidents, and comments with realistic data, and automatically assigns random priority levels to incidents.
+
+## Use Cases
+
+- **Development environment setup**: Quickly populate a development database with test data
+- **Testing**: Create consistent datasets for integration and performance testing
+- **Demos**: Generate realistic sample data for product demonstrations
+- **Load testing**: Create large datasets to test system performance under load
+
+## Query Parameters
+
+<ParamField query="usuarios" type="integer" default="10">
+  Number of random users to generate
+</ParamField>
+
+<ParamField query="incidentes" type="integer" default="20">
+  Number of random incidents to generate
+</ParamField>
+
+<ParamField query="comentarios" type="integer" default="30">
+  Number of random comments to generate
+</ParamField>
+
+## Request
+
+<CodeGroup>
+
+```bash cURL - Default Values
+curl -X POST "https://api.alertaciudadana.com/generar-datos/"
+```
+
+```bash cURL - Custom Counts
+curl -X POST "https://api.alertaciudadana.com/generar-datos/?usuarios=50&incidentes=100&comentarios=200"
+```
+
+```python Python
+import requests
+
+# With default values
+response = requests.post("https://api.alertaciudadana.com/generar-datos/")
+
+# With custom counts
+response = requests.post(
+    "https://api.alertaciudadana.com/generar-datos/",
+    params={
+        "usuarios": 50,
+        "incidentes": 100,
+        "comentarios": 200
+    }
+)
+result = response.json()
+```
+
+```javascript JavaScript
+// With default values
+fetch('https://api.alertaciudadana.com/generar-datos/', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// With custom counts
+fetch('https://api.alertaciudadana.com/generar-datos/?usuarios=50&incidentes=100&comentarios=200', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</CodeGroup>
+
+## Response
+
+<ResponseField name="mensaje" type="string">
+  Success message confirming data generation
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if the operation fails (only present on error)
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "mensaje": "✔ Datos generados exitosamente con prioridad"
+}
+```
+
+```json 500 - Error
+{
+  "error": "Database connection failed"
+}
+```
+
+</ResponseExample>
+
+## Implementation Details
+
+The endpoint performs the following operations:
+
+1. Calls the `sp_generar_datos_prueba` stored procedure with the specified counts
+2. Generates the requested number of users, incidents, and comments
+3. Automatically assigns random priority levels (Alta, Media, Baja) to all generated incidents
+4. Commits all changes in a single transaction
+
+## Priority Assignment
+
+After generating incidents, the endpoint automatically assigns one of three priority levels:
+
+- **Alta** (High): Critical incidents requiring immediate attention
+- **Media** (Medium): Standard incidents requiring normal response
+- **Baja** (Low): Non-urgent incidents
+
+Priorities are assigned randomly to create realistic test datasets.
+
+## Notes
+
+- All operations are performed in a single database transaction
+- If any operation fails, the entire transaction is rolled back
+- Generated data follows the same schema and constraints as production data
+- For generating only specific data types, use the individual endpoints: `/generar-usuarios/`, `/generar-incidentes/`, or `/generar-comentarios/`

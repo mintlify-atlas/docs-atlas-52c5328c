@@ -1,0 +1,210 @@
+---
+title: 'Update Incident'
+api: 'PUT /incidente/{id}'
+description: 'Update an existing incident'
+---
+
+## Endpoint
+
+```
+PUT /incidente/{id}
+```
+
+Updates an existing incident with new information. All fields in the request body will replace the current values.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the incident to update
+</ParamField>
+
+## Authentication
+
+<Note>
+  Authentication is currently commented out in the source code but may be required in production. The endpoint would require a valid bearer token when authentication is enabled.
+</Note>
+
+## Request Body
+
+<ParamField body="titulo" type="string" required>
+  Updated title of the incident (max 100 characters)
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Updated description of the incident (max 500 characters)
+</ParamField>
+
+<ParamField body="imagen" type="string" optional>
+  Updated URL or filename of the incident image. Can be null.
+</ParamField>
+
+<ParamField body="latitud" type="float" required>
+  Updated latitude coordinate of the incident location
+</ParamField>
+
+<ParamField body="longitud" type="float" required>
+  Updated longitude coordinate of the incident location
+</ParamField>
+
+<ParamField body="estado" type="string" required>
+  Updated status of the incident. Must be one of:
+  - `pendiente` - Pending review
+  - `en revisión` - Under review
+  - `atendido` - Resolved/Attended
+  - `descartado` - Dismissed
+</ParamField>
+
+<ParamField body="usuario_id" type="integer" required>
+  Updated ID of the user associated with the incident
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  Updated ID of the incident category
+</ParamField>
+
+<Note>
+  The `fecha_reporte` field cannot be updated and will retain its original value.
+</Note>
+
+## Response
+
+Returns the updated incident object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier of the incident
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Updated title
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Updated description
+</ResponseField>
+
+<ResponseField name="imagen" type="string" optional>
+  Updated image URL or filename
+</ResponseField>
+
+<ResponseField name="latitud" type="float">
+  Updated latitude
+</ResponseField>
+
+<ResponseField name="longitud" type="float">
+  Updated longitude
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Updated status
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Original timestamp (unchanged)
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer">
+  Updated user ID
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  Updated category ID
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X PUT "http://localhost:8000/incidente/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Bache reparado en Av. Principal",
+    "descripcion": "El bache ha sido reparado por las autoridades",
+    "imagen": "incidente_001_resolved.jpg",
+    "latitud": -12.046374,
+    "longitud": -77.042793,
+    "estado": "atendido",
+    "usuario_id": 5,
+    "categoria_id": 2
+  }'
+```
+
+```python Python
+import requests
+
+data = {
+    "titulo": "Bache reparado en Av. Principal",
+    "descripcion": "El bache ha sido reparado por las autoridades",
+    "imagen": "incidente_001_resolved.jpg",
+    "latitud": -12.046374,
+    "longitud": -77.042793,
+    "estado": "atendido",
+    "usuario_id": 5,
+    "categoria_id": 2
+}
+
+response = requests.put(
+    "http://localhost:8000/incidente/1",
+    json=data
+)
+incident = response.json()
+```
+
+```javascript JavaScript
+const data = {
+  titulo: 'Bache reparado en Av. Principal',
+  descripcion: 'El bache ha sido reparado por las autoridades',
+  imagen: 'incidente_001_resolved.jpg',
+  latitud: -12.046374,
+  longitud: -77.042793,
+  estado: 'atendido',
+  usuario_id: 5,
+  categoria_id: 2
+};
+
+const response = await fetch('http://localhost:8000/incidente/1', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+});
+const incident = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": 1,
+  "titulo": "Bache reparado en Av. Principal",
+  "descripcion": "El bache ha sido reparado por las autoridades",
+  "imagen": "incidente_001_resolved.jpg",
+  "latitud": -12.046374,
+  "longitud": -77.042793,
+  "estado": "atendido",
+  "fecha_reporte": "2026-03-03T10:30:00",
+  "usuario_id": 5,
+  "categoria_id": 2
+}
+```
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Incident with the specified ID does not exist
+  
+  ```json
+  {
+    "detail": "Incidente no existe, no actualizado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid request body or path parameter
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  Invalid foreign key references (usuario_id or categoria_id do not exist)
+</ResponseField>

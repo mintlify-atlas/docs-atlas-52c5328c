@@ -1,0 +1,140 @@
+---
+title: 'Delete Incident'
+api: 'DELETE /incidente/{id}'
+description: 'Delete an incident from the system'
+---
+
+## Endpoint
+
+```
+DELETE /incidente/{id}
+```
+
+Permanently deletes an incident from the system. This operation cannot be undone.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the incident to delete
+</ParamField>
+
+## Authentication
+
+<Note>
+  Authentication is currently commented out in the source code but may be required in production. The endpoint would require a valid bearer token when authentication is enabled.
+</Note>
+
+<Warning>
+  This is a destructive operation. The incident will be permanently removed from the database and cannot be recovered.
+</Warning>
+
+## Response
+
+Returns the deleted incident object as confirmation.
+
+<ResponseField name="id" type="integer">
+  Unique identifier of the deleted incident
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the deleted incident
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the deleted incident
+</ResponseField>
+
+<ResponseField name="imagen" type="string" optional>
+  Image URL or filename of the deleted incident
+</ResponseField>
+
+<ResponseField name="latitud" type="float">
+  Latitude coordinate
+</ResponseField>
+
+<ResponseField name="longitud" type="float">
+  Longitude coordinate
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Status of the deleted incident
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Original report timestamp
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer">
+  ID of the user who reported the incident
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the incident category
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "http://localhost:8000/incidente/1" \
+  -H "Accept: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.delete("http://localhost:8000/incidente/1")
+deleted_incident = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:8000/incidente/1', {
+  method: 'DELETE',
+  headers: {
+    'Accept': 'application/json'
+  }
+});
+const deletedIncident = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": 1,
+  "titulo": "Bache peligroso en Av. Principal",
+  "descripcion": "Hay un bache grande que puede causar accidentes",
+  "imagen": "incidente_001.jpg",
+  "latitud": -12.046374,
+  "longitud": -77.042793,
+  "estado": "pendiente",
+  "fecha_reporte": "2026-03-03T10:30:00",
+  "usuario_id": 5,
+  "categoria_id": 2
+}
+```
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Incident with the specified ID does not exist
+  
+  ```json
+  {
+    "detail": "Incidente no existe, no se pudo eliminar"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid ID parameter (must be an integer)
+</ResponseField>
+
+## Related Considerations
+
+<Info>
+  Deleting an incident may affect related data:
+  - Comments associated with this incident may be orphaned or deleted (depending on database cascade rules)
+  - Any foreign key references to this incident should be handled appropriately
+</Info>

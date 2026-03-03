@@ -1,0 +1,140 @@
+---
+title: 'System Architecture'
+description: 'Overview of the Alerta Ciudadana API architecture, tech stack, and project structure'
+---
+
+## Overview
+
+Alerta Ciudadana is a REST API built for reporting and managing urban incidents. The system allows citizens to report incidents, add comments, and track their status while providing administrators with tools for incident management and categorization.
+
+## Technology Stack
+
+### Core Framework
+- **FastAPI**: Modern, high-performance web framework for building APIs with Python 3.7+
+- **Uvicorn**: ASGI server for running the FastAPI application (main.py:78)
+
+### Database Layer
+- **SQLAlchemy**: SQL toolkit and ORM for database operations
+- **PostgreSQL**: Primary database (configured via `DATABASE_URL` environment variable)
+- Database connection managed through `create_engine` and `sessionmaker` (src/config/db.py:11-12)
+
+### Authentication & Security
+- **PyJWT**: JWT token generation and validation
+- **Passlib with bcrypt**: Password hashing for secure credential storage (src/routes/usuario.py:11,62)
+- **HTTPBearer**: Token-based authentication scheme
+
+### Data Validation
+- **Pydantic**: Data validation and settings management using Python type annotations
+- Automatic request/response validation through Pydantic schemas
+
+### Additional Features
+- **CORS Middleware**: Cross-origin resource sharing enabled for all origins (main.py:59-65)
+- **Machine Learning Integration**: Priority calculation for incidents via ML models
+
+## Project Structure
+
+```
+source/
+├── main.py                    # Application entry point and route registration
+├── portadortoken.py          # JWT bearer token validation middleware
+├── ml_prioridad.py           # ML model for incident priority calculation
+├── ml_nl_prioridad.py        # Natural language processing for critical zones
+└── src/
+    ├── config/
+    │   └── db.py             # Database configuration and session management
+    ├── models/               # SQLAlchemy ORM models
+    │   ├── usuario.py        # User database model
+    │   ├── incidente.py      # Incident database model
+    │   ├── comentario.py     # Comment database model
+    │   └── categoria.py      # Category database model
+    ├── schemas/              # Pydantic validation schemas
+    │   ├── usuario.py        # User request/response schemas
+    │   ├── incidente.py      # Incident request/response schemas
+    │   ├── comentario.py     # Comment request/response schemas
+    │   └── categoria.py      # Category request/response schemas
+    ├── routes/               # API endpoint definitions
+    │   ├── usuario.py        # User-related endpoints
+    │   ├── incidente.py      # Incident-related endpoints
+    │   ├── comentario.py     # Comment-related endpoints
+    │   └── categoria.py      # Category-related endpoints
+    ├── crud/                 # Database operations layer
+    │   └── usuario.py        # User CRUD operations
+    ├── utils/
+    │   └── jwt_utils.py      # JWT token utilities
+    └── seeder/               # Database seeding utilities
+        ├── seeder.py
+        ├── seeder_usuarios.py
+        ├── seeder_comentarios.py
+        └── seeder_incidentes.py
+```
+
+## Application Architecture
+
+### Layered Design
+
+The API follows a layered architecture pattern:
+
+1. **Routes Layer** (`src/routes/*`): Defines API endpoints, handles HTTP requests/responses, and applies authentication dependencies
+2. **Schemas Layer** (`src/schemas/*`): Validates incoming data and serializes outgoing responses using Pydantic models
+3. **CRUD Layer** (`src/crud/*`): Encapsulates database operations and business logic
+4. **Models Layer** (`src/models/*`): Defines database schema using SQLAlchemy ORM
+5. **Config Layer** (`src/config/db.py`): Manages database connections and sessions
+
+### Request Flow
+
+1. Client sends HTTP request to an API endpoint
+2. FastAPI routes the request to the appropriate handler (src/routes/*)
+3. `Portador` middleware validates JWT token for protected endpoints
+4. Pydantic schema validates request data
+5. Route handler calls CRUD function with validated data
+6. CRUD layer performs database operations via SQLAlchemy
+7. Response is serialized through Pydantic schema
+8. FastAPI returns JSON response to client
+
+## Database Management
+
+### Connection Handling
+
+Database sessions are managed using the dependency injection pattern:
+
+```python
+def get_db():
+    db = SesionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+```
+
+This ensures proper connection lifecycle management and automatic cleanup (src/routes/usuario.py:18-23).
+
+### Schema Migration
+
+Database tables are automatically created using SQLAlchemy's metadata:
+
+```python
+base.metadata.create_all(bind=engine)
+```
+
+This is executed on application startup (main.py:19).
+
+## API Registration
+
+The main application includes routers for each resource:
+
+- **Usuario Router**: User management endpoints (main.py:71)
+- **Incidente Router**: Incident reporting and management (main.py:72)
+- **Comentario Router**: Comment operations (main.py:73)
+- **Categoria Router**: Category management (main.py:74)
+- **Zonas Router**: ML-powered critical zone analysis (main.py:75)
+
+## Environment Configuration
+
+The application uses environment variables for configuration:
+
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET_KEY`: Secret key for JWT token signing
+- `JWT_ALGORITHM`: JWT encoding algorithm (e.g., HS256)
+- `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time in minutes
+
+These are loaded via `python-decouple` and `python-dotenv` (src/config/db.py:8, src/utils/jwt_utils.py:8).

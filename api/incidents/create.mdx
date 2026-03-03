@@ -1,0 +1,194 @@
+---
+title: 'Create Incident'
+api: 'POST /incidente/'
+description: 'Create a new incident report'
+---
+
+## Endpoint
+
+```
+POST /incidente/
+```
+
+Creates a new incident in the system. The incident is automatically assigned a timestamp and a default status of "pendiente" (pending).
+
+## Authentication
+
+<Note>
+  Authentication is currently commented out in the source code but may be required in production. The endpoint would require a valid bearer token when authentication is enabled.
+</Note>
+
+## Request Body
+
+<ParamField body="titulo" type="string" required>
+  Title of the incident (max 100 characters)
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Detailed description of the incident (max 500 characters)
+</ParamField>
+
+<ParamField body="imagen" type="string" optional>
+  URL or filename of the incident image. Can be null if no image is provided.
+</ParamField>
+
+<ParamField body="latitud" type="float" required>
+  Latitude coordinate of the incident location
+</ParamField>
+
+<ParamField body="longitud" type="float" required>
+  Longitude coordinate of the incident location
+</ParamField>
+
+<ParamField body="estado" type="string" required>
+  Initial status of the incident. Must be one of:
+  - `pendiente` - Pending review (default)
+  - `en revisión` - Under review
+  - `atendido` - Resolved/Attended
+  - `descartado` - Dismissed
+</ParamField>
+
+<ParamField body="usuario_id" type="integer" required>
+  ID of the user reporting the incident. Must reference an existing user.
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  ID of the incident category. Must reference an existing category.
+</ParamField>
+
+## Response
+
+Returns the created incident object with auto-generated fields (`id` and `fecha_reporte`).
+
+<ResponseField name="id" type="integer">
+  Unique identifier assigned to the new incident
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the incident
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the incident
+</ResponseField>
+
+<ResponseField name="imagen" type="string" optional>
+  URL or filename of the incident image
+</ResponseField>
+
+<ResponseField name="latitud" type="float">
+  Latitude coordinate
+</ResponseField>
+
+<ResponseField name="longitud" type="float">
+  Longitude coordinate
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Status of the incident
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Auto-generated timestamp when the incident was created (UTC)
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer">
+  ID of the reporting user
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the incident category
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8000/incidente/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Bache peligroso en Av. Principal",
+    "descripcion": "Hay un bache grande que puede causar accidentes",
+    "imagen": "incidente_001.jpg",
+    "latitud": -12.046374,
+    "longitud": -77.042793,
+    "estado": "pendiente",
+    "usuario_id": 5,
+    "categoria_id": 2
+  }'
+```
+
+```python Python
+import requests
+
+data = {
+    "titulo": "Bache peligroso en Av. Principal",
+    "descripcion": "Hay un bache grande que puede causar accidentes",
+    "imagen": "incidente_001.jpg",
+    "latitud": -12.046374,
+    "longitud": -77.042793,
+    "estado": "pendiente",
+    "usuario_id": 5,
+    "categoria_id": 2
+}
+
+response = requests.post(
+    "http://localhost:8000/incidente/",
+    json=data
+)
+incident = response.json()
+```
+
+```javascript JavaScript
+const data = {
+  titulo: 'Bache peligroso en Av. Principal',
+  descripcion: 'Hay un bache grande que puede causar accidentes',
+  imagen: 'incidente_001.jpg',
+  latitud: -12.046374,
+  longitud: -77.042793,
+  estado: 'pendiente',
+  usuario_id: 5,
+  categoria_id: 2
+};
+
+const response = await fetch('http://localhost:8000/incidente/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+});
+const incident = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": 15,
+  "titulo": "Bache peligroso en Av. Principal",
+  "descripcion": "Hay un bache grande que puede causar accidentes",
+  "imagen": "incidente_001.jpg",
+  "latitud": -12.046374,
+  "longitud": -77.042793,
+  "estado": "pendiente",
+  "fecha_reporte": "2026-03-03T14:23:45.123456",
+  "usuario_id": 5,
+  "categoria_id": 2
+}
+```
+
+## Status Codes
+
+<ResponseField name="200" type="Success">
+  Incident created successfully
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid request body or missing required fields
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  Invalid foreign key references (usuario_id or categoria_id do not exist)
+</ResponseField>

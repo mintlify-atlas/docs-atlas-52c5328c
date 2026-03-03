@@ -1,0 +1,120 @@
+---
+title: 'Generate Test Users'
+api: 'POST /generar-usuarios/'
+description: 'Generate random test users for development and testing'
+---
+
+## Overview
+
+This endpoint generates random test users with realistic data for development and testing purposes. Users are created with complete profiles including names, emails, and authentication credentials.
+
+## Use Cases
+
+- **User testing**: Create test accounts for QA and testing scenarios
+- **Development**: Populate local development environments with user data
+- **Performance testing**: Generate large numbers of users for load testing
+- **Demo preparation**: Create sample users for product demonstrations
+
+## Query Parameters
+
+<ParamField query="usuarios" type="integer" default="10">
+  Number of random users to generate
+</ParamField>
+
+## Request
+
+<CodeGroup>
+
+```bash cURL - Default
+curl -X POST "https://api.alertaciudadana.com/generar-usuarios/"
+```
+
+```bash cURL - Custom Count
+curl -X POST "https://api.alertaciudadana.com/generar-usuarios/?usuarios=50"
+```
+
+```python Python
+import requests
+
+# Generate 10 users (default)
+response = requests.post("https://api.alertaciudadana.com/generar-usuarios/")
+
+# Generate custom number of users
+response = requests.post(
+    "https://api.alertaciudadana.com/generar-usuarios/",
+    params={"usuarios": 50}
+)
+result = response.json()
+print(result["mensaje"])
+```
+
+```javascript JavaScript
+// Generate 10 users (default)
+fetch('https://api.alertaciudadana.com/generar-usuarios/', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Generate custom number of users
+fetch('https://api.alertaciudadana.com/generar-usuarios/?usuarios=50', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</CodeGroup>
+
+## Response
+
+<ResponseField name="mensaje" type="string">
+  Success message indicating the number of users generated
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if the operation fails (only present on error)
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "mensaje": "✔ 50 usuarios generados exitosamente"
+}
+```
+
+```json 500 - Error
+{
+  "error": "Database constraint violation: duplicate email"
+}
+```
+
+</ResponseExample>
+
+## Implementation Details
+
+The endpoint:
+
+1. Calls the `sp_crear_usuarios_aleatorios` stored procedure
+2. Generates the specified number of users with random but realistic data
+3. Creates complete user profiles with all required fields
+4. Commits changes in a single transaction
+
+## Generated User Data
+
+Each generated user includes:
+
+- Unique username
+- Valid email address
+- Hashed password
+- Profile information (name, contact details)
+- Timestamps (creation date, last login)
+
+## Notes
+
+- All operations are performed in a single database transaction
+- If the operation fails, all changes are rolled back
+- Generated users follow the same validation rules as production users
+- Email addresses are guaranteed to be unique
+- For comprehensive data generation including incidents and comments, use the `/generar-datos/` endpoint

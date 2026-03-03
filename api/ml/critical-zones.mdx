@@ -1,0 +1,131 @@
+---
+title: 'Detect Critical Zones'
+api: 'GET /ml/zonas-criticas'
+description: 'Detect critical zones using DBSCAN clustering algorithm on incident locations'
+---
+
+## Overview
+
+This endpoint analyzes all incidents in the database and identifies critical zones where incidents are clustered together. It uses the DBSCAN (Density-Based Spatial Clustering of Applications with Noise) machine learning algorithm to automatically detect high-density areas of incidents.
+
+## Algorithm Details
+
+The endpoint implements DBSCAN clustering with the following approach:
+
+- **Automatic epsilon (eps) calculation**: Uses k-nearest neighbors to calculate the optimal epsilon parameter based on the 90th percentile of distances to the nearest neighbor
+- **Minimum samples**: Set to 2, meaning at least 2 incidents are required to form a cluster
+- **Metric**: Euclidean distance between latitude/longitude coordinates
+- **Outlier handling**: Incidents that don't belong to any cluster (labeled as -1) are excluded from results
+
+## Use Cases
+
+- **Resource allocation**: Identify areas requiring increased police or emergency services presence
+- **Urban planning**: Detect problematic zones that need infrastructure improvements
+- **Pattern analysis**: Understand geographic distribution of incidents
+- **Prevention strategies**: Focus prevention efforts on high-incident areas
+
+## Request
+
+No parameters required. The endpoint analyzes all incidents in the database.
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET "https://api.alertaciudadana.com/ml/zonas-criticas"
+```
+
+```python Python
+import requests
+
+response = requests.get("https://api.alertaciudadana.com/ml/zonas-criticas")
+zonas = response.json()
+```
+
+```javascript JavaScript
+fetch('https://api.alertaciudadana.com/ml/zonas-criticas')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</CodeGroup>
+
+## Response
+
+<ResponseField name="total_incidentes" type="integer">
+  Total number of incidents analyzed
+</ResponseField>
+
+<ResponseField name="eps_usado" type="float">
+  Epsilon parameter automatically calculated and used for DBSCAN clustering (useful for debugging and understanding cluster density)
+</ResponseField>
+
+<ResponseField name="total_zonas" type="integer">
+  Number of critical zones detected
+</ResponseField>
+
+<ResponseField name="zonas_criticas" type="array">
+  Array of detected critical zones
+  
+  <Expandable title="zona object">
+    <ResponseField name="zona_id" type="integer">
+      Unique identifier for the cluster
+    </ResponseField>
+    
+    <ResponseField name="cantidad_incidentes" type="integer">
+      Number of incidents in this zone
+    </ResponseField>
+    
+    <ResponseField name="lat_centro" type="float">
+      Latitude coordinate of the zone's center (mean of all incident latitudes)
+    </ResponseField>
+    
+    <ResponseField name="lng_centro" type="float">
+      Longitude coordinate of the zone's center (mean of all incident longitudes)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "total_incidentes": 47,
+  "eps_usado": 0.0123,
+  "total_zonas": 3,
+  "zonas_criticas": [
+    {
+      "zona_id": 0,
+      "cantidad_incidentes": 15,
+      "lat_centro": 19.4326,
+      "lng_centro": -99.1332
+    },
+    {
+      "zona_id": 1,
+      "cantidad_incidentes": 8,
+      "lat_centro": 19.4284,
+      "lng_centro": -99.1276
+    },
+    {
+      "zona_id": 2,
+      "cantidad_incidentes": 12,
+      "lat_centro": 19.4389,
+      "lng_centro": -99.1421
+    }
+  ]
+}
+```
+
+```json 200 - No Incidents
+{
+  "message": "No hay incidentes registrados"
+}
+```
+
+</ResponseExample>
+
+## Notes
+
+- The algorithm automatically adjusts to the spatial distribution of incidents
+- Isolated incidents that don't cluster with others are filtered out
+- The `eps_usado` value indicates the maximum distance between incidents in the same cluster
+- Higher `cantidad_incidentes` values indicate more critical zones requiring attention

@@ -1,80 +1,392 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with Alerta Ciudadana API in minutes - from registration to your first incident report
 ---
 
-## Get started in three steps
+## Your First API Call
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will walk you through the essential workflow: registering a user, logging in to get an access token, and creating your first incident report.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  This quickstart assumes you have the API running locally on `http://localhost:8000`. If you haven't installed it yet, check out the [Installation Guide](/installation).
 </Note>
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- The API server running (`uvicorn main:app --reload`)
+- A tool to make HTTP requests (curl, Postman, or HTTPie)
+- Your database properly configured and migrated
+
+## Step-by-Step Workflow
+
+<Steps>
+  <Step title="Register a New User">
+    First, create a new user account. The registration endpoint is public and doesn't require authentication.
+
+    ```bash Register User
+    curl -X POST "http://localhost:8000/register" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "nombre": "Juan",
+        "apellidos": "Pérez García",
+        "correo_electronico": "juan.perez@example.com",
+        "telefono": "+52 55 1234 5678",
+        "contrasena": "SecurePassword123!"
+      }'
+    ```
+
+    **Response:**
+
+    ```json
+    {
+      "usuario": {
+        "id": 1,
+        "nombre": "Juan",
+        "correo_electronico": "juan.perez@example.com",
+        "rol": "ciudadano",
+        "fecha_creacion": "2026-03-03T10:30:00"
+      },
+      "message": "Usuario registrado correctamente"
+    }
+    ```
+
+    <Note>
+      The password is automatically hashed using bcrypt before storage. The default role is `ciudadano` (citizen).
+    </Note>
+  </Step>
+
+  <Step title="Login and Get Access Token">
+    Now authenticate with your credentials to receive a JWT access token.
+
+    ```bash Login
+    curl -X POST "http://localhost:8000/login" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "correo_electronico": "juan.perez@example.com",
+        "contrasena": "SecurePassword123!"
+      }'
+    ```
+
+    **Response:**
+
+    ```json
+    {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "token_type": "bearer"
+    }
+    ```
+
+    <Warning>
+      Save this token! You'll need it for authenticated endpoints. The token includes your user ID, name, and role.
+    </Warning>
+  </Step>
+
+  <Step title="Create Your First Incident">
+    Report an urban incident with geolocation data. This endpoint doesn't require authentication in the current implementation.
+
+    ```bash Create Incident
+    curl -X POST "http://localhost:8000/incidente/" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "titulo": "Semáforo descompuesto en crucero principal",
+        "descripcion": "El semáforo no funciona desde hace dos días, causando congestionamiento y riesgo de accidentes",
+        "imagen": "https://example.com/images/semaforo-roto.jpg",
+        "latitud": 19.432608,
+        "longitud": -99.133209,
+        "estado": "pendiente",
+        "usuario_id": 1,
+        "categoria_id": 1
+      }'
+    ```
+
+    **Response:**
+
+    ```json
+    {
+      "id": 1,
+      "titulo": "Semáforo descompuesto en crucero principal",
+      "descripcion": "El semáforo no funciona desde hace dos días, causando congestionamiento y riesgo de accidentes",
+      "imagen": "https://example.com/images/semaforo-roto.jpg",
+      "latitud": 19.432608,
+      "longitud": -99.133209,
+      "estado": "pendiente",
+      "usuario_id": 1,
+      "categoria_id": 1,
+      "fecha_reporte": "2026-03-03T10:35:00"
+    }
+    ```
+
+    <Note>
+      The `categoria_id` should reference an existing category. Common categories include infrastructure (1), security (2), health (3), and environment (4).
+    </Note>
+  </Step>
+
+  <Step title="List All Incidents">
+    Retrieve a list of reported incidents with pagination support.
+
+    ```bash List Incidents
+    curl -X GET "http://localhost:8000/incidentes/?skip=0&limit=10"
+    ```
+
+    **Response:**
+
+    ```json
+    [
+      {
+        "id": 1,
+        "titulo": "Semáforo descompuesto en crucero principal",
+        "descripcion": "El semáforo no funciona desde hace dos días...",
+        "latitud": 19.432608,
+        "longitud": -99.133209,
+        "estado": "pendiente",
+        "fecha_reporte": "2026-03-03T10:35:00",
+        "usuario_id": 1,
+        "categoria_id": 1
+      }
+    ]
+    ```
+  </Step>
+
+  <Step title="Get Incident by ID">
+    Retrieve details of a specific incident.
+
+    ```bash Get Single Incident
+    curl -X GET "http://localhost:8000/incidente/1"
+    ```
+
+    Returns the same structure as the create response.
+  </Step>
+</Steps>
+
+## ML-Powered Features
+
+### Get Priority Classification
+
+The API uses machine learning to automatically classify incident priorities based on description keywords.
+
+```bash Get Prioritized Incidents
+curl -X GET "http://localhost:8000/incidentes_prioridad"
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "descripcion": "Incendio en edificio abandonado",
+    "fecha_reporte": "2026-03-03T10:00:00",
+    "prioridad": "alta"
+  },
+  {
+    "id": 2,
+    "descripcion": "Basura acumulada en la esquina",
+    "fecha_reporte": "2026-03-03T11:00:00",
+    "prioridad": "media"
+  }
+]
+```
+
+**Priority Classification Rules:**
+
+- **Alta (High)**: Keywords like "incendio", "arma", "robo", "accidente", "caer", "humo"
+- **Media (Medium)**: Keywords like "ruido", "contaminación", "basura", "luz"
+- **Baja (Low)**: Keywords like "vecinos", "madrugada", "música"
+
+### Detect Critical Zones
+
+Identify geographical areas with high incident concentration using DBSCAN clustering.
+
+```bash Detect Critical Zones
+curl -X GET "http://localhost:8000/ml/zonas-criticas"
+```
+
+**Response:**
+
+```json
+{
+  "total_incidentes": 45,
+  "eps_usado": 0.00234,
+  "total_zonas": 3,
+  "zonas_criticas": [
+    {
+      "zona_id": 0,
+      "cantidad_incidentes": 15,
+      "lat_centro": 19.4326,
+      "lng_centro": -99.1332
+    },
+    {
+      "zona_id": 1,
+      "cantidad_incidentes": 12,
+      "lat_centro": 19.4285,
+      "lng_centro": -99.1278
+    }
+  ]
+}
+```
+
+<Note>
+  The `eps_usado` value is automatically calculated using nearest neighbor distances and represents the maximum distance between two points to be considered in the same cluster.
+</Note>
+
+## Working with Categories
+
+### List Available Categories
+
+```bash List Categories
+curl -X GET "http://localhost:8000/categorias/?skip=0&limit=10"
+```
+
+### Create a New Category
+
+```bash Create Category
+curl -X POST "http://localhost:8000/categoria/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Infraestructura",
+    "descripcion": "Problemas relacionados con calles, alumbrado y servicios públicos"
+  }'
+```
+
+## Protected Endpoints
+
+Some endpoints require authentication. Include the JWT token in the Authorization header:
+
+```bash Authenticated Request
+curl -X GET "http://localhost:8000/usuarios/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Protected Endpoints:**
+
+- `GET /usuarios/` - List all users
+- `GET /usuario/{id}` - Get user by ID
+- `PUT /usuario/{id}` - Update user
+- `DELETE /usuario/{id}` - Delete user
+
+## Common Incident States
+
+Update an incident's state as it progresses through the workflow:
+
+<CodeGroup>
+
+```bash Under Review
+curl -X PUT "http://localhost:8000/incidente/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Semáforo descompuesto en crucero principal",
+    "descripcion": "El semáforo no funciona desde hace dos días...",
+    "latitud": 19.432608,
+    "longitud": -99.133209,
+    "estado": "en revisión",
+    "usuario_id": 1,
+    "categoria_id": 1
+  }'
+```
+
+```bash Resolved
+curl -X PUT "http://localhost:8000/incidente/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Semáforo descompuesto en crucero principal",
+    "descripcion": "El semáforo no funciona desde hace dos días...",
+    "latitud": 19.432608,
+    "longitud": -99.133209,
+    "estado": "atendido",
+    "usuario_id": 1,
+    "categoria_id": 1
+  }'
+```
+
+```bash Dismissed
+curl -X PUT "http://localhost:8000/incidente/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Semáforo descompuesto en crucero principal",
+    "descripcion": "El semáforo no funciona desde hace dos días...",
+    "latitud": 19.432608,
+    "longitud": -99.133209,
+    "estado": "descartado",
+    "usuario_id": 1,
+    "categoria_id": 1
+  }'
+```
+
+</CodeGroup>
+
+## Testing with Python
+
+If you prefer Python, here's a complete example using the `requests` library:
+
+```python Python Example
+import requests
+
+BASE_URL = "http://localhost:8000"
+
+# 1. Register a user
+register_data = {
+    "nombre": "María",
+    "apellidos": "González López",
+    "correo_electronico": "maria.gonzalez@example.com",
+    "telefono": "+52 55 9876 5432",
+    "contrasena": "SecurePass456!"
+}
+response = requests.post(f"{BASE_URL}/register", json=register_data)
+print("Registration:", response.json())
+
+# 2. Login
+login_data = {
+    "correo_electronico": "maria.gonzalez@example.com",
+    "contrasena": "SecurePass456!"
+}
+response = requests.post(f"{BASE_URL}/login", json=login_data)
+token = response.json()["access_token"]
+print("Token:", token)
+
+# 3. Create incident
+incident_data = {
+    "titulo": "Fuga de agua en tubería principal",
+    "descripcion": "Gran fuga de agua desperdiciando recursos",
+    "latitud": 19.4284,
+    "longitud": -99.1276,
+    "estado": "pendiente",
+    "usuario_id": 1,
+    "categoria_id": 1
+}
+response = requests.post(f"{BASE_URL}/incidente/", json=incident_data)
+print("Incident:", response.json())
+
+# 4. Get ML priorities
+response = requests.get(f"{BASE_URL}/incidentes_prioridad")
+print("Priorities:", response.json())
+
+# 5. Detect critical zones
+response = requests.get(f"{BASE_URL}/ml/zonas-criticas")
+print("Critical Zones:", response.json())
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication Guide" icon="key" href="/concepts/authentication">
+    Learn about JWT tokens and secure endpoints
+  </Card>
+  
+  <Card title="ML Priority Classification" icon="brain" href="/ml/priority-classification">
+    Deep dive into incident priority classification
+  </Card>
+  
+  <Card title="Critical Zones" icon="map-location-dot" href="/ml/critical-zones">
+    Understand DBSCAN clustering for zone detection
+  </Card>
+  
+  <Card title="Data Models" icon="database" href="/concepts/data-models">
+    Understand the database schema and relationships
+  </Card>
+</CardGroup>
+
+<Warning>
+  Remember to handle errors properly in production. The API returns standard HTTP status codes: 200 (success), 400 (bad request), 401 (unauthorized), 404 (not found), etc.
+</Warning>

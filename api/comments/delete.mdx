@@ -1,0 +1,117 @@
+---
+title: "Delete Comment"
+api: "DELETE /comentario/{id}"
+description: "Delete a comment by ID"
+---
+
+## Endpoint
+
+```
+DELETE /comentario/{id}
+```
+
+Permanently deletes a comment from the system. This action cannot be undone.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the comment to delete
+</ParamField>
+
+## Response
+
+Returns the deleted comment object for confirmation.
+
+<ResponseField name="id" type="integer" required>
+  Unique identifier of the deleted comment
+</ResponseField>
+
+<ResponseField name="contenido" type="string" required>
+  The content/text of the deleted comment
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer" required>
+  ID of the user who created the comment
+</ResponseField>
+
+<ResponseField name="incidente_id" type="integer" required>
+  ID of the incident the comment belonged to
+</ResponseField>
+
+<ResponseField name="fecha" type="datetime" required>
+  Timestamp when the comment was originally created
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://api.example.com/comentario/1" \
+  -H "Content-Type: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.delete("https://api.example.com/comentario/1")
+deleted_comment = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.example.com/comentario/1',
+  {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+);
+const deletedComment = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+<ResponseExample>
+```json 200 - Success
+{
+  "id": 1,
+  "contenido": "Reporté este incidente hace 2 días y aún no hay respuesta",
+  "usuario_id": 5,
+  "incidente_id": 12,
+  "fecha": "2026-03-01T14:30:00Z"
+}
+```
+
+```json 404 - Not Found
+{
+  "detail": "Comentario no existe, no se pudo eliminar"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="404" type="error">
+  Comment not found - returned when the specified ID doesn't exist
+  
+  ```json
+  {
+    "detail": "Comentario no existe, no se pudo eliminar"
+  }
+  ```
+</ResponseField>
+
+## Relationships
+
+Deleting a comment does not affect the related records:
+
+- **usuario_id**: The user who created the comment remains in the `usuarios` table
+- **incidente_id**: The incident remains in the `incidentes` table
+
+## Notes
+
+- This operation is permanent and cannot be undone
+- The API returns the deleted comment data for confirmation purposes
+- Consider implementing soft deletes or archiving for production systems if comment history needs to be preserved

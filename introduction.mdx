@@ -1,0 +1,170 @@
+---
+title: Introduction
+description: Welcome to Alerta Ciudadana - A modern API for urban incident reporting and management powered by FastAPI and Machine Learning
+---
+
+## Welcome to Alerta Ciudadana
+
+Alerta Ciudadana is a comprehensive REST API built with FastAPI that enables citizens to report urban incidents, track their status, and help authorities prioritize emergency responses. The system leverages machine learning to automatically classify incident priorities and detect critical zones based on geographical clustering.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Incident Management" icon="triangle-exclamation">
+    Complete CRUD operations for urban incidents with geolocation support, image uploads, and real-time status tracking.
+  </Card>
+  
+  <Card title="ML Priority Classification" icon="brain">
+    Automatic incident prioritization using TF-IDF text analysis and keyword-based classification (high, medium, low priority).
+  </Card>
+  
+  <Card title="Critical Zone Detection" icon="map-location-dot">
+    DBSCAN clustering algorithm identifies critical zones by analyzing incident density and geographical patterns.
+  </Card>
+  
+  <Card title="User Authentication" icon="lock">
+    Secure JWT-based authentication with role-based access control (admin/citizen) and bcrypt password hashing.
+  </Card>
+  
+  <Card title="Category System" icon="tags">
+    Organize incidents by categories (infrastructure, security, health, environment) for better management.
+  </Card>
+  
+  <Card title="Comment System" icon="comments">
+    Enable community engagement with threaded comments on incidents for updates and discussions.
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+The API is built with modern Python technologies:
+
+- **FastAPI** - High-performance async web framework
+- **SQLAlchemy** - ORM for database operations
+- **Pydantic** - Data validation and serialization
+- **scikit-learn** - Machine learning for priority classification and clustering
+- **PyJWT** - JSON Web Token implementation
+- **Passlib + bcrypt** - Secure password hashing
+- **Pandas & NumPy** - Data processing and analysis
+
+## Core Components
+
+### Incident States
+
+Incidents flow through the following states:
+
+```python
+class EstadoIncidente(str, Enum):
+    pendiente = "pendiente"          # Newly reported
+    en_revision = "en revisión"       # Under review
+    atendido = "atendido"             # Resolved
+    descartado = "descartado"         # Dismissed
+```
+
+### User Roles
+
+The system supports two user roles:
+
+```python
+class RolUsuario(str, Enum):
+    ciudadano = "ciudadano"  # Regular citizen
+    admin = "admin"          # Administrator
+```
+
+## ML-Powered Features
+
+### Priority Classification
+
+The system automatically analyzes incident descriptions and assigns priority levels:
+
+- **High Priority**: Fire, weapons, robbery, accidents, falling objects
+- **Medium Priority**: Noise, pollution, garbage, lighting issues
+- **Low Priority**: Neighborhood disputes, late-night music
+
+### Critical Zone Detection
+
+Using DBSCAN (Density-Based Spatial Clustering), the API identifies geographical areas with high incident concentration. This helps authorities:
+
+- Allocate resources efficiently
+- Identify problem areas requiring intervention
+- Track incident trends over time
+- Plan preventive measures
+
+<Note>
+  The system automatically calculates optimal clustering parameters using nearest neighbor distances and percentile analysis.
+</Note>
+
+## API Architecture
+
+The codebase follows a clean, modular structure:
+
+```
+source/
+├── main.py                    # FastAPI app and route configuration
+├── src/
+│   ├── routes/               # API endpoints
+│   │   ├── usuario.py        # User management & auth
+│   │   ├── incidente.py      # Incident operations
+│   │   ├── categoria.py      # Category management
+│   │   └── comentario.py     # Comment system
+│   ├── models/               # SQLAlchemy ORM models
+│   ├── schemas/              # Pydantic validation schemas
+│   ├── crud/                 # Database operations
+│   └── utils/                # JWT utilities
+├── ml_prioridad.py           # ML priority classification
+└── ml_nl_prioridad.py        # Critical zone detection
+```
+
+## Quick Example
+
+Here's how simple it is to report an incident:
+
+```bash
+curl -X POST "http://localhost:8000/incidente/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Bache peligroso en Avenida Principal",
+    "descripcion": "Hueco grande que puede causar accidentes",
+    "latitud": 19.4326,
+    "longitud": -99.1332,
+    "estado": "pendiente",
+    "usuario_id": 1,
+    "categoria_id": 1
+  }'
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Municipal Governments">
+    Track and manage citizen reports for infrastructure issues, safety concerns, and public services.
+  </Card>
+  
+  <Card title="Emergency Services">
+    Prioritize responses based on ML-powered classification and identify high-risk areas.
+  </Card>
+  
+  <Card title="Community Organizations">
+    Enable citizen participation in urban improvement and track issue resolution.
+  </Card>
+  
+  <Card title="Urban Planning">
+    Analyze incident patterns and geographical data to inform planning decisions.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running with your first API calls in minutes
+  </Card>
+  
+  <Card title="Installation" icon="download" href="/installation">
+    Set up the development environment and configure the database
+  </Card>
+</CardGroup>
+
+<Warning>
+  This API is designed for development and testing. For production deployment, ensure you configure proper security measures, environment variables, and database credentials.
+</Warning>

@@ -1,0 +1,129 @@
+---
+title: 'Generate Test Comments'
+api: 'POST /generar-comentarios/'
+description: 'Generate random test comments for incidents'
+---
+
+## Overview
+
+This endpoint generates random test comments associated with existing incidents. Comments are created with varied content, user associations, and timestamps to simulate community interaction on incident reports.
+
+## Use Cases
+
+- **Social features testing**: Test comment display, threading, and moderation features
+- **Engagement metrics**: Generate data for testing community engagement analytics
+- **Performance testing**: Test comment loading and pagination with large datasets
+- **UI development**: Populate incident detail pages with realistic comment threads
+
+## Query Parameters
+
+<ParamField query="comentarios" type="integer" default="10">
+  Number of random comments to generate
+</ParamField>
+
+## Request
+
+<CodeGroup>
+
+```bash cURL - Default
+curl -X POST "https://api.alertaciudadana.com/generar-comentarios/"
+```
+
+```bash cURL - Custom Count
+curl -X POST "https://api.alertaciudadana.com/generar-comentarios/?comentarios=150"
+```
+
+```python Python
+import requests
+
+# Generate 10 comments (default)
+response = requests.post("https://api.alertaciudadana.com/generar-comentarios/")
+
+# Generate custom number of comments
+response = requests.post(
+    "https://api.alertaciudadana.com/generar-comentarios/",
+    params={"comentarios": 150}
+)
+result = response.json()
+print(result["mensaje"])
+```
+
+```javascript JavaScript
+// Generate 10 comments (default)
+fetch('https://api.alertaciudadana.com/generar-comentarios/', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Generate custom number of comments
+fetch('https://api.alertaciudadana.com/generar-comentarios/?comentarios=150', {
+  method: 'POST'
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</CodeGroup>
+
+## Response
+
+<ResponseField name="mensaje" type="string">
+  Success message indicating the number of comments generated
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if the operation fails (only present on error)
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "mensaje": "✔ 150 comentarios insertados exitosamente"
+}
+```
+
+```json 500 - Error
+{
+  "error": "Foreign key constraint failed: no incidents found"
+}
+```
+
+</ResponseExample>
+
+## Implementation Details
+
+The endpoint:
+
+1. Calls the `sp_insertar_comentarios_aleatorios` stored procedure
+2. Generates the specified number of comments with randomized content
+3. Associates each comment with an existing incident and user
+4. Distributes comments across multiple incidents
+5. Commits changes in a single transaction
+
+## Generated Comment Data
+
+Each generated comment includes:
+
+- **Content**: Realistic comment text with varied length and tone
+- **Author**: Associated with an existing user in the system
+- **Incident**: Linked to an existing incident report
+- **Timestamp**: Creation date and time
+- **Status**: Approval status (typically starts as approved)
+
+## Prerequisites
+
+- **Users must exist**: Comments require existing users as authors
+- **Incidents must exist**: Comments are associated with existing incidents
+
+If you need to generate a complete test environment, use `/generar-datos/` to create users, incidents, and comments in the correct order.
+
+## Notes
+
+- Comments are distributed across available incidents in the database
+- All operations are performed in a single database transaction
+- If the operation fails, all changes are rolled back
+- Generated comments follow the same validation rules as production comments
+- Comment content is varied to simulate realistic user interactions
+- For comprehensive data generation, use `/generar-datos/` to ensure proper data dependencies

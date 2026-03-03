@@ -1,0 +1,131 @@
+---
+title: 'Login'
+api: 'POST /login'
+description: 'Authenticate a user and receive a JWT access token'
+---
+
+This endpoint authenticates a user with their email and password, returning a JWT access token that can be used to authorize subsequent API requests.
+
+## Request Body
+
+<ParamField body="correo_electronico" type="string" required>
+  User's registered email address
+</ParamField>
+
+<ParamField body="contrasena" type="string" required>
+  User's password
+</ParamField>
+
+## Response
+
+<ResponseField name="access_token" type="string">
+  JWT access token used for authentication in subsequent requests. Include this token in the `Authorization` header as `Bearer <token>`.
+  
+  **Token Payload Structure:**
+  - `id` (integer) - User's unique identifier
+  - `nombre` (string) - User's first name
+  - `rol` (string) - User's role ("ciudadano" or "admin")
+</ResponseField>
+
+<ResponseField name="token_type" type="string">
+  Token type, always returns `"bearer"`
+</ResponseField>
+
+## Examples
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.alerta-ciudadana.com/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "correo_electronico": "juan.perez@example.com",
+    "contrasena": "securePassword123"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.alerta-ciudadana.com/login"
+payload = {
+    "correo_electronico": "juan.perez@example.com",
+    "contrasena": "securePassword123"
+}
+
+response = requests.post(url, json=payload)
+data = response.json()
+
+# Use the token in subsequent requests
+access_token = data['access_token']
+headers = {'Authorization': f'Bearer {access_token}'}
+```
+
+```javascript JavaScript
+fetch('https://api.alerta-ciudadana.com/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    correo_electronico: 'juan.perez@example.com',
+    contrasena: 'securePassword123'
+  })
+})
+.then(response => response.json())
+.then(data => {
+  // Store the token for subsequent requests
+  const accessToken = data.access_token;
+  console.log('Login successful:', accessToken);
+});
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response (200)
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJub21icmUiOiJKdWFuIiwicm9sIjoiY2l1ZGFkYW5vIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+  "token_type": "bearer"
+}
+```
+
+```json Error Response (401)
+{
+  "detail": "Correo o contraseña incorrectos"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="error">
+  Returned when the email or password is incorrect.
+  
+  **Error Details:**
+  - `Correo o contraseña incorrectos` - The provided credentials don't match any registered user
+</ResponseField>
+
+<ResponseField name="422 Unprocessable Entity" type="error">
+  Returned when the request body doesn't match the expected schema (e.g., invalid email format, missing required fields).
+</ResponseField>
+
+## Using the JWT Token
+
+Once you receive the JWT token from the login endpoint, include it in the `Authorization` header of subsequent API requests:
+
+```bash
+Authorization: Bearer <access_token>
+```
+
+### Example Authenticated Request
+
+```bash cURL
+curl -X GET https://api.alerta-ciudadana.com/usuarios/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+The JWT token contains the following information:
+- **id**: User's unique identifier
+- **nombre**: User's first name
+- **rol**: User's role ("ciudadano" or "admin")
+
+This information is used by protected endpoints to verify the user's identity and permissions.

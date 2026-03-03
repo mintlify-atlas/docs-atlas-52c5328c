@@ -1,0 +1,97 @@
+---
+title: "Get User"
+api: "GET /usuario/{id}"
+description: "Retrieve detailed information about a specific user by their ID"
+---
+
+## Authentication
+
+This endpoint requires JWT authentication. Include a valid bearer token in the Authorization header.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the user to retrieve
+</ParamField>
+
+## Response
+
+Returns a single user object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the user
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  User's name
+</ResponseField>
+
+<ResponseField name="correo_electronico" type="string">
+  User's email address
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  User role. Possible values: `ciudadano`, `admin`
+</ResponseField>
+
+<ResponseField name="fecha_creacion" type="string">
+  ISO 8601 datetime when the user was created
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.example.com/usuario/1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/usuario/1"
+headers = {
+    "Authorization": "Bearer YOUR_JWT_TOKEN"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/usuario/1', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "correo_electronico": "juan@example.com",
+  "rol": "ciudadano",
+  "fecha_creacion": "2024-01-15T10:30:00"
+}
+```
+
+```json 401 Unauthorized
+{
+  "detail": "Not authenticated"
+}
+```
+
+```json 404 Not Found
+{
+  "detail": "Usuario no encontrado"
+}
+```
+
+</ResponseExample>

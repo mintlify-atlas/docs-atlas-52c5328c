@@ -1,0 +1,81 @@
+---
+title: "List Categories"
+api: "GET /categorias/"
+---
+
+Retrieves a paginated list of all incident categories.
+
+## Query Parameters
+
+<ParamField query="skip" type="integer" default="0">
+  Number of records to skip for pagination
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Maximum number of records to return
+</ParamField>
+
+## Response
+
+Returns an array of category objects.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the category
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Category name (e.g., "Robo", "Fuga de agua")
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Category description
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.example.com/categorias/?skip=0&limit=10" \
+  -H "Content-Type: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.example.com/categorias/",
+    params={"skip": 0, "limit": 10}
+)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/categorias/?skip=0&limit=10')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+[
+  {
+    "id": 1,
+    "nombre": "Robo",
+    "descripcion": "Incidentes relacionados con robos y hurtos"
+  },
+  {
+    "id": 2,
+    "nombre": "Fuga de agua",
+    "descripcion": "Reportes de fugas de agua en la vía pública"
+  },
+  {
+    "id": 3,
+    "nombre": "Bache",
+    "descripcion": "Baches en calles y avenidas"
+  }
+]
+```
+
+</ResponseExample>

@@ -1,0 +1,132 @@
+---
+title: 'Get Incident'
+api: 'GET /incidente/{id}'
+description: 'Retrieve a specific incident by ID'
+---
+
+## Endpoint
+
+```
+GET /incidente/{id}
+```
+
+Retrieves detailed information about a specific incident by its ID.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the incident to retrieve
+</ParamField>
+
+## Authentication
+
+<Note>
+  Authentication is currently commented out in the source code but may be required in production. The endpoint would require a valid bearer token when authentication is enabled.
+</Note>
+
+## Response
+
+Returns a single incident object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the incident
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the incident (max 100 characters)
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Detailed description of the incident (max 500 characters)
+</ResponseField>
+
+<ResponseField name="imagen" type="string" optional>
+  URL or filename of the incident image
+</ResponseField>
+
+<ResponseField name="latitud" type="float">
+  Latitude coordinate of the incident location
+</ResponseField>
+
+<ResponseField name="longitud" type="float">
+  Longitude coordinate of the incident location
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current status of the incident. Possible values:
+  - `pendiente` - Pending review
+  - `en revisión` - Under review
+  - `atendido` - Resolved/Attended
+  - `descartado` - Dismissed
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Timestamp when the incident was reported (UTC)
+</ResponseField>
+
+<ResponseField name="usuario_id" type="integer">
+  ID of the user who reported the incident
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the incident category
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8000/incidente/1" \
+  -H "Accept: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.get("http://localhost:8000/incidente/1")
+incident = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:8000/incidente/1', {
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json'
+  }
+});
+const incident = await response.json();
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": 1,
+  "titulo": "Bache peligroso en Av. Principal",
+  "descripcion": "Hay un bache grande que puede causar accidentes",
+  "imagen": "incidente_001.jpg",
+  "latitud": -12.046374,
+  "longitud": -77.042793,
+  "estado": "pendiente",
+  "fecha_reporte": "2026-03-03T10:30:00",
+  "usuario_id": 5,
+  "categoria_id": 2
+}
+```
+
+## Error Responses
+
+<ResponseField name="404" type="Not Found">
+  Incident with the specified ID does not exist
+  
+  ```json
+  {
+    "detail": "Incidente no encontrado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid ID parameter (must be an integer)
+</ResponseField>

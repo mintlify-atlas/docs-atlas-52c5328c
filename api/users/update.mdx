@@ -1,0 +1,136 @@
+---
+title: "Update User"
+api: "PUT /usuario/{id}"
+description: "Update an existing user's information"
+---
+
+## Authentication
+
+This endpoint requires JWT authentication. Include a valid bearer token in the Authorization header.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the user to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="nombre" type="string" required>
+  User's name
+</ParamField>
+
+<ParamField body="correo_electronico" type="string" required>
+  User's email address (must be a valid email format)
+</ParamField>
+
+<ParamField body="rol" type="string" required>
+  User role. Allowed values: `ciudadano`, `admin`
+</ParamField>
+
+<ParamField body="contrasena" type="string" required>
+  User's password (will be hashed before storage)
+</ParamField>
+
+## Response
+
+Returns the updated user object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the user
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  User's updated name
+</ResponseField>
+
+<ResponseField name="correo_electronico" type="string">
+  User's updated email address
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  User's updated role
+</ResponseField>
+
+<ResponseField name="fecha_creacion" type="string">
+  ISO 8601 datetime when the user was originally created
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT "https://api.example.com/usuario/1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Juan Carlos Pérez",
+    "correo_electronico": "juancarlos@example.com",
+    "rol": "admin",
+    "contrasena": "newSecurePassword123"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/usuario/1"
+headers = {
+    "Authorization": "Bearer YOUR_JWT_TOKEN",
+    "Content-Type": "application/json"
+}
+data = {
+    "nombre": "Juan Carlos Pérez",
+    "correo_electronico": "juancarlos@example.com",
+    "rol": "admin",
+    "contrasena": "newSecurePassword123"
+}
+
+response = requests.put(url, headers=headers, json=data)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/usuario/1', {
+  method: 'PUT',
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    nombre: 'Juan Carlos Pérez',
+    correo_electronico: 'juancarlos@example.com',
+    rol: 'admin',
+    contrasena: 'newSecurePassword123'
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "id": 1,
+  "nombre": "Juan Carlos Pérez",
+  "correo_electronico": "juancarlos@example.com",
+  "rol": "admin",
+  "fecha_creacion": "2024-01-15T10:30:00"
+}
+```
+
+```json 401 Unauthorized
+{
+  "detail": "Not authenticated"
+}
+```
+
+```json 404 Not Found
+{
+  "detail": "Usuario no existe, no actualizado"
+}
+```
+
+</ResponseExample>

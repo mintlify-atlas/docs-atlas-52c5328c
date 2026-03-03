@@ -1,0 +1,273 @@
+---
+title: 'Authentication'
+description: 'JWT-based authentication flow, token usage, and protected endpoints'
+---
+
+## Overview
+
+Alerta Ciudadana uses JWT (JSON Web Token) authentication to secure API endpoints. The system implements bearer token authentication with bcrypt password hashing for secure credential management.
+
+## Authentication Flow
+
+### 1. User Registration
+
+New users register via the `/register` endpoint:
+
+```python
+POST /register
+```
+
+**Request Body:**
+
+<ParamField path="nombre" type="string" required>
+  User's first name
+</ParamField>
+
+<ParamField path="apellidos" type="string" required>
+  User's last name
+</ParamField>
+
+<ParamField path="correo_electronico" type="string" required>
+  Valid email address
+</ParamField>
+
+<ParamField path="telefono" type="string" required>
+  Phone number
+</ParamField>
+
+<ParamField path="contrasena" type="string" required>
+  Password (hashed with bcrypt before storage)
+</ParamField>
+
+The system automatically assigns the "ciudadano" (citizen) role to new registrations. Passwords are hashed using bcrypt before being stored in the database (src/routes/usuario.py:51).
+
+### 2. User Login
+
+Authenticated users obtain a JWT token via the `/login` endpoint:
+
+```python
+POST /login
+```
+
+**Request Body:**
+
+<ParamField path="correo_electronico" type="string" required>
+  User's registered email address
+</ParamField>
+
+<ParamField path="contrasena" type="string" required>
+  User's password
+</ParamField>
+
+**Authentication Process** (src/routes/usuario.py:56-70):
+
+1. System queries database for user by email
+2. If user not found, returns 401 Unauthorized
+3. Verifies password using `bcrypt.verify()` against stored hash
+4. If password invalid, returns 401 Unauthorized
+5. Generates JWT token containing user claims
+6. Returns token to client
+
+**Response:**
+
+<ResponseField name="access_token" type="string">
+  JWT token for authentication
+</ResponseField>
+
+<ResponseField name="token_type" type="string">
+  Always "bearer"
+</ResponseField>
+
+### 3. Making Authenticated Requests
+
+Include the JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer <your_jwt_token>
+```
+
+## JWT Token Structure
+
+### Token Generation
+
+Tokens are generated using the `solicita_token()` function (src/utils/jwt_utils.py:14-25):
+
+**Payload Claims:**
+
+<ResponseField name="sub" type="integer">
+  Subject - User ID from database
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  User's name for identification
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  User role: "ciudadano" or "admin"
+</ResponseField>
+
+<ResponseField name="exp" type="timestamp">
+  Expiration time (UTC timestamp)
+</ResponseField>
+
+**Token Configuration:**
+- **Algorithm**: Configured via `JWT_ALGORITHM` environment variable (typically HS256)
+- **Secret Key**: Configured via `JWT_SECRET_KEY` environment variable
+- **Expiration**: Configured via `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` (default: 60 minutes)
+
+### Token Validation
+
+Tokens are validated using the `valida_token()` function (src/utils/jwt_utils.py:27-47):
+
+**Validation Steps:**
+
+1. **Decode Token**: Uses JWT library with secret key and algorithm
+2. **Check Expiration**: Verifies token has not expired
+3. **Validate Structure**: Ensures required claims are present
+4. **Return Payload**: Returns decoded user data if valid
+
+**Possible Errors:**
+
+- `401 Unauthorized`: Token has expired (ExpiredSignatureError)
+- `401 Unauthorized`: Token is invalid or malformed (DecodeError)
+- `401 Unauthorized`: Token missing expiration information
+
+## Protected Endpoints
+
+### Portador Middleware
+
+Protected endpoints use the `Portador` class (portadortoken.py:5-19), which extends FastAPI's `HTTPBearer`:
+
+```python
+dependencies=[Depends(Portador())]
+```
+
+**Authorization Process:**
+
+1. Extracts bearer token from Authorization header
+2. Calls `valida_token()` to verify token validity
+3. Returns decoded payload (user data) to endpoint handler
+4. Raises 401 error if token is missing, expired, or invalid
+
+### Protected Endpoint Examples
+
+#### Get All Users
+
+```python
+GET /usuarios/
+```
+
+Requires valid JWT token. Returns paginated list of users (src/routes/usuario.py:25-32).
+
+#### Get Single User
+
+```python
+GET /usuario/{id}
+```
+
+Requires valid JWT token. Returns specific user by ID (src/routes/usuario.py:34-44).
+
+#### Update User
+
+```python
+PUT /usuario/{id}
+```
+
+Requires valid JWT token. Updates user information (src/routes/usuario.py:72-82).
+
+#### Delete User
+
+```python
+DELETE /usuario/{id}
+```
+
+Requires valid JWT token. Removes user from system (src/routes/usuario.py:84-94).
+
+## User Roles
+
+The system supports two user roles defined in the `RolUsuario` enum:
+
+<ResponseField name="ciudadano" type="string">
+  Standard user role for citizens reporting incidents
+</ResponseField>
+
+<ResponseField name="admin" type="string">
+  Administrative role for managing incidents and users
+</ResponseField>
+
+Roles are stored in the JWT token payload and can be used for role-based access control (src/models/usuario.py:8-10, src/schemas/usuario.py:5-7).
+
+## Security Best Practices
+
+### Password Hashing
+
+- Passwords are **never** stored in plain text
+- Uses **bcrypt** algorithm for secure one-way hashing
+- Salt is automatically generated per password
+- Verification uses timing-safe comparison
+
+### Token Security
+
+- Tokens expire after configured duration (default 60 minutes)
+- Secret key should be strong and kept confidential
+- Tokens are stateless - no server-side session storage required
+- Token payload is signed but not encrypted (don't store sensitive data)
+
+### Error Handling
+
+- Authentication failures return generic "401 Unauthorized" messages
+- Does not reveal whether email or password was incorrect
+- Prevents user enumeration attacks
+
+## Environment Variables
+
+Required environment variables for authentication (src/utils/jwt_utils.py:10-12):
+
+```bash
+JWT_SECRET_KEY=your-secret-key-here
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+<Warning>
+  The `JWT_SECRET_KEY` should be a strong, randomly generated string. Never commit this value to version control.
+</Warning>
+
+## Common Authentication Errors
+
+| Status Code | Error Message | Cause |
+|------------|---------------|-------|
+| 400 | Correo ya registrado | Email already exists during registration |
+| 401 | Correo o contraseña incorrectos | Invalid login credentials |
+| 401 | Token no proporcionado | Missing Authorization header |
+| 401 | Token ha expirado | Token expiration time has passed |
+| 401 | Token inválido | Malformed or tampered token |
+
+## Example: Complete Authentication Flow
+
+```bash
+# 1. Register new user
+curl -X POST http://localhost:8000/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Juan",
+    "apellidos": "Pérez",
+    "correo_electronico": "juan@example.com",
+    "telefono": "1234567890",
+    "contrasena": "securepassword123"
+  }'
+
+# 2. Login to get token
+curl -X POST http://localhost:8000/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "correo_electronico": "juan@example.com",
+    "contrasena": "securepassword123"
+  }'
+
+# Response: {"access_token": "eyJ...", "token_type": "bearer"}
+
+# 3. Use token for authenticated request
+curl -X GET http://localhost:8000/usuarios/ \
+  -H "Authorization: Bearer eyJ..."
+```

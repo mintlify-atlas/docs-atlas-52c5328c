@@ -1,0 +1,108 @@
+---
+title: "List Users"
+api: "GET /usuarios/"
+description: "Retrieve a paginated list of all users in the system"
+---
+
+## Authentication
+
+This endpoint requires JWT authentication. Include a valid bearer token in the Authorization header.
+
+## Query Parameters
+
+<ParamField query="skip" type="integer" default="0">
+  Number of records to skip for pagination
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Maximum number of records to return
+</ParamField>
+
+## Response
+
+Returns an array of user objects.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the user
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  User's name
+</ResponseField>
+
+<ResponseField name="correo_electronico" type="string">
+  User's email address
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  User role. Possible values: `ciudadano`, `admin`
+</ResponseField>
+
+<ResponseField name="fecha_creacion" type="string">
+  ISO 8601 datetime when the user was created
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.example.com/usuarios/?skip=0&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/usuarios/"
+headers = {
+    "Authorization": "Bearer YOUR_JWT_TOKEN"
+}
+params = {
+    "skip": 0,
+    "limit": 10
+}
+
+response = requests.get(url, headers=headers, params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+fetch('https://api.example.com/usuarios/?skip=0&limit=10', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+  }
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+[
+  {
+    "id": 1,
+    "nombre": "Juan Pérez",
+    "correo_electronico": "juan@example.com",
+    "rol": "ciudadano",
+    "fecha_creacion": "2024-01-15T10:30:00"
+  },
+  {
+    "id": 2,
+    "nombre": "María González",
+    "correo_electronico": "maria@example.com",
+    "rol": "admin",
+    "fecha_creacion": "2024-01-16T14:20:00"
+  }
+]
+```
+
+```json 401 Unauthorized
+{
+  "detail": "Not authenticated"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,191 @@
+---
+title: 'Get Incidents by Priority'
+api: 'GET /incidentes_prioridad'
+description: 'Retrieve incidents with ML-based priority classification'
+---
+
+## Endpoint
+
+```
+GET /incidentes_prioridad
+```
+
+Retrieves all incidents from the database with machine learning-based priority classification. This endpoint uses natural language processing to analyze incident descriptions and automatically assign priority levels.
+
+## Authentication
+
+<Note>
+  This endpoint does not require authentication.
+</Note>
+
+## ML Priority Classification
+
+The endpoint uses a keyword-based machine learning algorithm to analyze incident descriptions and classify them into three priority levels:
+
+### Priority Levels
+
+<ResponseField name="alta" type="High Priority">
+  Assigned when descriptions contain critical keywords:
+  - `humo` (smoke)
+  - `incendio` (fire)
+  - `arma` (weapon)
+  - `robo` (robbery)
+  - `accidente` (accident)
+  - `caer` (fall)
+</ResponseField>
+
+<ResponseField name="media" type="Medium Priority">
+  Assigned when descriptions contain moderate-impact keywords:
+  - `ruido` (noise)
+  - `contaminación` (contamination/pollution)
+  - `basura` (garbage)
+  - `luz` (light)
+</ResponseField>
+
+<ResponseField name="baja" type="Low Priority">
+  Default priority assigned when no high or medium priority keywords are detected:
+  - `vecinos` (neighbors)
+  - `madrugada` (early morning)
+  - `música` (music)
+  - Or any description without priority keywords
+</ResponseField>
+
+## How It Works
+
+The ML system processes incidents through the following pipeline:
+
+1. **Data Collection**: Fetches all incidents from the database with their `id`, `descripcion`, and `fecha_reporte`
+2. **Text Analysis**: Converts descriptions to lowercase and searches for priority keywords
+3. **Priority Assignment**: Classifies each incident based on keyword matches (alta > media > baja)
+4. **Response Formation**: Returns incidents as an array with the computed `prioridad` field
+
+## Response
+
+Returns an array of incident objects with priority information.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the incident
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description text that was analyzed for priority classification
+</ResponseField>
+
+<ResponseField name="fecha_reporte" type="datetime">
+  Timestamp when the incident was reported
+</ResponseField>
+
+<ResponseField name="prioridad" type="string">
+  ML-assigned priority level: `alta`, `media`, or `baja`
+</ResponseField>
+
+## Example Request
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8000/incidentes_prioridad" \
+  -H "Accept: application/json"
+```
+
+```python Python
+import requests
+
+response = requests.get("http://localhost:8000/incidentes_prioridad")
+incidents_with_priority = response.json()
+
+# Filter by high priority
+high_priority = [i for i in incidents_with_priority if i['prioridad'] == 'alta']
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:8000/incidentes_prioridad', {
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json'
+  }
+});
+const incidentsWithPriority = await response.json();
+
+// Filter by high priority
+const highPriority = incidentsWithPriority.filter(
+  incident => incident.prioridad === 'alta'
+);
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "descripcion": "Hay un incendio en el edificio de la esquina con mucho humo",
+    "fecha_reporte": "2026-03-03T10:30:00",
+    "prioridad": "alta"
+  },
+  {
+    "id": 2,
+    "descripcion": "Acumulación de basura en la esquina desde hace una semana",
+    "fecha_reporte": "2026-03-02T15:45:00",
+    "prioridad": "media"
+  },
+  {
+    "id": 3,
+    "descripcion": "Los vecinos hacen música hasta la madrugada",
+    "fecha_reporte": "2026-03-01T22:15:00",
+    "prioridad": "baja"
+  },
+  {
+    "id": 4,
+    "descripcion": "Un automóvil chocó contra un poste, posible accidente grave",
+    "fecha_reporte": "2026-03-03T14:20:00",
+    "prioridad": "alta"
+  }
+]
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Emergency Response" icon="siren-on">
+    Quickly identify and respond to high-priority incidents that require immediate attention (fires, accidents, crimes).
+  </Card>
+  
+  <Card title="Resource Allocation" icon="chart-gantt">
+    Distribute municipal resources efficiently based on incident priority levels.
+  </Card>
+  
+  <Card title="Dashboard Analytics" icon="chart-line">
+    Create real-time dashboards showing priority distribution and trends.
+  </Card>
+  
+  <Card title="Automated Routing" icon="route">
+    Route incidents to appropriate departments based on their ML-assigned priority.
+  </Card>
+</CardGroup>
+
+## Implementation Details
+
+<Info>
+  **Technology Stack**:
+  - Text processing: Lowercase normalization and keyword matching
+  - Data handling: pandas DataFrame for efficient data manipulation
+  - Database: Direct MySQL connection for real-time data
+  - ML approach: Rule-based classification (keyword matching)
+</Info>
+
+## Status Codes
+
+<ResponseField name="200" type="Success">
+  Returns array of incidents with priority classifications
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Database connection error or ML processing failure
+</ResponseField>
+
+## Performance Notes
+
+<Warning>
+  This endpoint processes all incidents in the database. For large datasets, response times may be significant. Consider implementing caching or pagination for production use.
+</Warning>
