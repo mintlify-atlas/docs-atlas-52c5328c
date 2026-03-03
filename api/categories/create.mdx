@@ -36,7 +36,7 @@ Returns the created category object with its assigned ID.
 <RequestExample>
 
 ```bash cURL
-curl -X POST "https://api.example.com/categoria/" \
+curl -X POST "http://localhost:8000/categoria/" \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Alumbrado público",
@@ -53,14 +53,14 @@ data = {
 }
 
 response = requests.post(
-    "https://api.example.com/categoria/",
+    "http://localhost:8000/categoria/",
     json=data
 )
 print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/categoria/', {
+fetch('http://localhost:8000/categoria/', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

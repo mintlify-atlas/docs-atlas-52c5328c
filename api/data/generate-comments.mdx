@@ -26,22 +26,22 @@ This endpoint generates random test comments associated with existing incidents.
 <CodeGroup>
 
 ```bash cURL - Default
-curl -X POST "https://api.alertaciudadana.com/generar-comentarios/"
+curl -X POST "http://localhost:8000/generar-comentarios/"
 ```
 
 ```bash cURL - Custom Count
-curl -X POST "https://api.alertaciudadana.com/generar-comentarios/?comentarios=150"
+curl -X POST "http://localhost:8000/generar-comentarios/?comentarios=150"
 ```
 
 ```python Python
 import requests
 
 # Generate 10 comments (default)
-response = requests.post("https://api.alertaciudadana.com/generar-comentarios/")
+response = requests.post("http://localhost:8000/generar-comentarios/")
 
 # Generate custom number of comments
 response = requests.post(
-    "https://api.alertaciudadana.com/generar-comentarios/",
+    "http://localhost:8000/generar-comentarios/",
     params={"comentarios": 150}
 )
 result = response.json()
@@ -50,14 +50,14 @@ print(result["mensaje"])
 
 ```javascript JavaScript
 // Generate 10 comments (default)
-fetch('https://api.alertaciudadana.com/generar-comentarios/', {
+fetch('http://localhost:8000/generar-comentarios/', {
   method: 'POST'
 })
   .then(response => response.json())
   .then(data => console.log(data));
 
 // Generate custom number of comments
-fetch('https://api.alertaciudadana.com/generar-comentarios/?comentarios=150', {
+fetch('http://localhost:8000/generar-comentarios/?comentarios=150', {
   method: 'POST'
 })
   .then(response => response.json())

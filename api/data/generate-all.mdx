@@ -34,22 +34,22 @@ This endpoint generates complete test datasets for the Alerta Ciudadana system i
 <CodeGroup>
 
 ```bash cURL - Default Values
-curl -X POST "https://api.alertaciudadana.com/generar-datos/"
+curl -X POST "http://localhost:8000/generar-datos/"
 ```
 
 ```bash cURL - Custom Counts
-curl -X POST "https://api.alertaciudadana.com/generar-datos/?usuarios=50&incidentes=100&comentarios=200"
+curl -X POST "http://localhost:8000/generar-datos/?usuarios=50&incidentes=100&comentarios=200"
 ```
 
 ```python Python
 import requests
 
 # With default values
-response = requests.post("https://api.alertaciudadana.com/generar-datos/")
+response = requests.post("http://localhost:8000/generar-datos/")
 
 # With custom counts
 response = requests.post(
-    "https://api.alertaciudadana.com/generar-datos/",
+    "http://localhost:8000/generar-datos/",
     params={
         "usuarios": 50,
         "incidentes": 100,
@@ -61,14 +61,14 @@ result = response.json()
 
 ```javascript JavaScript
 // With default values
-fetch('https://api.alertaciudadana.com/generar-datos/', {
+fetch('http://localhost:8000/generar-datos/', {
   method: 'POST'
 })
   .then(response => response.json())
   .then(data => console.log(data));
 
 // With custom counts
-fetch('https://api.alertaciudadana.com/generar-datos/?usuarios=50&incidentes=100&comentarios=200', {
+fetch('http://localhost:8000/generar-datos/?usuarios=50&incidentes=100&comentarios=200', {
   method: 'POST'
 })
   .then(response => response.json())

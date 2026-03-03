@@ -56,7 +56,7 @@ Returns the created comment object with auto-generated fields.
 
 <CodeGroup>
 ```bash cURL
-curl -X POST "https://api.example.com/comentario/" \
+curl -X POST "http://localhost:8000/comentario/" \
   -H "Content-Type: application/json" \
   -d '{
     "contenido": "La situación está mejorando en esta área",
@@ -75,7 +75,7 @@ data = {
 }
 
 response = requests.post(
-    "https://api.example.com/comentario/",
+    "http://localhost:8000/comentario/",
     json=data
 )
 comment = response.json()
@@ -83,7 +83,7 @@ comment = response.json()
 
 ```javascript JavaScript
 const response = await fetch(
-  'https://api.example.com/comentario/',
+  'http://localhost:8000/comentario/',
   {
     method: 'POST',
     headers: {

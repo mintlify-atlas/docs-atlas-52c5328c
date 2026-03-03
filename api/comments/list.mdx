@@ -50,7 +50,7 @@ Returns an array of comment objects.
 
 <CodeGroup>
 ```bash cURL
-curl -X GET "https://api.example.com/comentarios/?skip=0&limit=10" \
+curl -X GET "http://localhost:8000/comentarios/?skip=0&limit=10" \
   -H "Content-Type: application/json"
 ```
 
@@ -58,7 +58,7 @@ curl -X GET "https://api.example.com/comentarios/?skip=0&limit=10" \
 import requests
 
 response = requests.get(
-    "https://api.example.com/comentarios/",
+    "http://localhost:8000/comentarios/",
     params={"skip": 0, "limit": 10}
 )
 comments = response.json()
@@ -66,7 +66,7 @@ comments = response.json()
 
 ```javascript JavaScript
 const response = await fetch(
-  'https://api.example.com/comentarios/?skip=0&limit=10',
+  'http://localhost:8000/comentarios/?skip=0&limit=10',
   {
     method: 'GET',
     headers: {

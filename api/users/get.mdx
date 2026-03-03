@@ -41,14 +41,14 @@ Returns a single user object.
 <RequestExample>
 
 ```bash cURL
-curl -X GET "https://api.example.com/usuario/1" \
+curl -X GET "http://localhost:8000/usuario/1" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ```python Python
 import requests
 
-url = "https://api.example.com/usuario/1"
+url = "http://localhost:8000/usuario/1"
 headers = {
     "Authorization": "Bearer YOUR_JWT_TOKEN"
 }
@@ -58,7 +58,7 @@ print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/usuario/1', {
+fetch('http://localhost:8000/usuario/1', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_JWT_TOKEN'

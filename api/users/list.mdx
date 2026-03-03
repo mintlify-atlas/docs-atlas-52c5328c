@@ -45,14 +45,14 @@ Returns an array of user objects.
 <RequestExample>
 
 ```bash cURL
-curl -X GET "https://api.example.com/usuarios/?skip=0&limit=10" \
+curl -X GET "http://localhost:8000/usuarios/?skip=0&limit=10" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ```python Python
 import requests
 
-url = "https://api.example.com/usuarios/"
+url = "http://localhost:8000/usuarios/"
 headers = {
     "Authorization": "Bearer YOUR_JWT_TOKEN"
 }
@@ -66,7 +66,7 @@ print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/usuarios/?skip=0&limit=10', {
+fetch('http://localhost:8000/usuarios/?skip=0&limit=10', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_JWT_TOKEN'

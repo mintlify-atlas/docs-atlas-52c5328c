@@ -34,7 +34,7 @@ Returns an array of category objects.
 <RequestExample>
 
 ```bash cURL
-curl -X GET "https://api.example.com/categorias/?skip=0&limit=10" \
+curl -X GET "http://localhost:8000/categorias/?skip=0&limit=10" \
   -H "Content-Type: application/json"
 ```
 
@@ -42,14 +42,14 @@ curl -X GET "https://api.example.com/categorias/?skip=0&limit=10" \
 import requests
 
 response = requests.get(
-    "https://api.example.com/categorias/",
+    "http://localhost:8000/categorias/",
     params={"skip": 0, "limit": 10}
 )
 print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/categorias/?skip=0&limit=10')
+fetch('http://localhost:8000/categorias/?skip=0&limit=10')
   .then(response => response.json())
   .then(data => console.log(data));
 ```

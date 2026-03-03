@@ -46,20 +46,20 @@ Returns the deleted comment object for confirmation.
 
 <CodeGroup>
 ```bash cURL
-curl -X DELETE "https://api.example.com/comentario/1" \
+curl -X DELETE "http://localhost:8000/comentario/1" \
   -H "Content-Type: application/json"
 ```
 
 ```python Python
 import requests
 
-response = requests.delete("https://api.example.com/comentario/1")
+response = requests.delete("http://localhost:8000/comentario/1")
 deleted_comment = response.json()
 ```
 
 ```javascript JavaScript
 const response = await fetch(
-  'https://api.example.com/comentario/1',
+  'http://localhost:8000/comentario/1',
   {
     method: 'DELETE',
     headers: {

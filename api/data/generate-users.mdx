@@ -26,22 +26,22 @@ This endpoint generates random test users with realistic data for development an
 <CodeGroup>
 
 ```bash cURL - Default
-curl -X POST "https://api.alertaciudadana.com/generar-usuarios/"
+curl -X POST "http://localhost:8000/generar-usuarios/"
 ```
 
 ```bash cURL - Custom Count
-curl -X POST "https://api.alertaciudadana.com/generar-usuarios/?usuarios=50"
+curl -X POST "http://localhost:8000/generar-usuarios/?usuarios=50"
 ```
 
 ```python Python
 import requests
 
 # Generate 10 users (default)
-response = requests.post("https://api.alertaciudadana.com/generar-usuarios/")
+response = requests.post("http://localhost:8000/generar-usuarios/")
 
 # Generate custom number of users
 response = requests.post(
-    "https://api.alertaciudadana.com/generar-usuarios/",
+    "http://localhost:8000/generar-usuarios/",
     params={"usuarios": 50}
 )
 result = response.json()
@@ -50,14 +50,14 @@ print(result["mensaje"])
 
 ```javascript JavaScript
 // Generate 10 users (default)
-fetch('https://api.alertaciudadana.com/generar-usuarios/', {
+fetch('http://localhost:8000/generar-usuarios/', {
   method: 'POST'
 })
   .then(response => response.json())
   .then(data => console.log(data));
 
 // Generate custom number of users
-fetch('https://api.alertaciudadana.com/generar-usuarios/?usuarios=50', {
+fetch('http://localhost:8000/generar-usuarios/?usuarios=50', {
   method: 'POST'
 })
   .then(response => response.json())

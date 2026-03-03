@@ -30,19 +30,19 @@ Returns the deleted category object.
 <RequestExample>
 
 ```bash cURL
-curl -X DELETE "https://api.example.com/categoria/1" \
+curl -X DELETE "http://localhost:8000/categoria/1" \
   -H "Content-Type: application/json"
 ```
 
 ```python Python
 import requests
 
-response = requests.delete("https://api.example.com/categoria/1")
+response = requests.delete("http://localhost:8000/categoria/1")
 print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/categoria/1', {
+fetch('http://localhost:8000/categoria/1', {
   method: 'DELETE',
   headers: {
     'Content-Type': 'application/json',

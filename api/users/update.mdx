@@ -59,7 +59,7 @@ Returns the updated user object.
 <RequestExample>
 
 ```bash cURL
-curl -X PUT "https://api.example.com/usuario/1" \
+curl -X PUT "http://localhost:8000/usuario/1" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -73,7 +73,7 @@ curl -X PUT "https://api.example.com/usuario/1" \
 ```python Python
 import requests
 
-url = "https://api.example.com/usuario/1"
+url = "http://localhost:8000/usuario/1"
 headers = {
     "Authorization": "Bearer YOUR_JWT_TOKEN",
     "Content-Type": "application/json"
@@ -90,7 +90,7 @@ print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.example.com/usuario/1', {
+fetch('http://localhost:8000/usuario/1', {
   method: 'PUT',
   headers: {
     'Authorization': 'Bearer YOUR_JWT_TOKEN',

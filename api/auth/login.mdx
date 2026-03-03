@@ -35,7 +35,7 @@ This endpoint authenticates a user with their email and password, returning a JW
 
 <RequestExample>
 ```bash cURL
-curl -X POST https://api.alerta-ciudadana.com/login \
+curl -X POST http://localhost:8000/login \
   -H "Content-Type: application/json" \
   -d '{
     "correo_electronico": "juan.perez@example.com",
@@ -46,7 +46,7 @@ curl -X POST https://api.alerta-ciudadana.com/login \
 ```python Python
 import requests
 
-url = "https://api.alerta-ciudadana.com/login"
+url = "http://localhost:8000/login"
 payload = {
     "correo_electronico": "juan.perez@example.com",
     "contrasena": "securePassword123"
@@ -61,7 +61,7 @@ headers = {'Authorization': f'Bearer {access_token}'}
 ```
 
 ```javascript JavaScript
-fetch('https://api.alerta-ciudadana.com/login', {
+fetch('http://localhost:8000/login', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ Authorization: Bearer <access_token>
 ### Example Authenticated Request
 
 ```bash cURL
-curl -X GET https://api.alerta-ciudadana.com/usuarios/ \
+curl -X GET http://localhost:8000/usuarios/ \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 

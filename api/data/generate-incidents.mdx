@@ -26,22 +26,22 @@ This endpoint generates random test incidents with realistic geographic coordina
 <CodeGroup>
 
 ```bash cURL - Default
-curl -X POST "https://api.alertaciudadana.com/generar-incidentes/"
+curl -X POST "http://localhost:8000/generar-incidentes/"
 ```
 
 ```bash cURL - Custom Count
-curl -X POST "https://api.alertaciudadana.com/generar-incidentes/?incidentes=100"
+curl -X POST "http://localhost:8000/generar-incidentes/?incidentes=100"
 ```
 
 ```python Python
 import requests
 
 # Generate 10 incidents (default)
-response = requests.post("https://api.alertaciudadana.com/generar-incidentes/")
+response = requests.post("http://localhost:8000/generar-incidentes/")
 
 # Generate custom number of incidents
 response = requests.post(
-    "https://api.alertaciudadana.com/generar-incidentes/",
+    "http://localhost:8000/generar-incidentes/",
     params={"incidentes": 100}
 )
 result = response.json()
@@ -50,14 +50,14 @@ print(result["mensaje"])
 
 ```javascript JavaScript
 // Generate 10 incidents (default)
-fetch('https://api.alertaciudadana.com/generar-incidentes/', {
+fetch('http://localhost:8000/generar-incidentes/', {
   method: 'POST'
 })
   .then(response => response.json())
   .then(data => console.log(data));
 
 // Generate custom number of incidents
-fetch('https://api.alertaciudadana.com/generar-incidentes/?incidentes=100', {
+fetch('http://localhost:8000/generar-incidentes/?incidentes=100', {
   method: 'POST'
 })
   .then(response => response.json())

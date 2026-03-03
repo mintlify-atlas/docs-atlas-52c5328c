@@ -64,7 +64,7 @@ This endpoint allows new users to register in the Alerta Ciudadana system. Upon 
 
 <RequestExample>
 ```bash cURL
-curl -X POST https://api.alerta-ciudadana.com/register \
+curl -X POST http://localhost:8000/register \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Juan",
@@ -78,7 +78,7 @@ curl -X POST https://api.alerta-ciudadana.com/register \
 ```python Python
 import requests
 
-url = "https://api.alerta-ciudadana.com/register"
+url = "http://localhost:8000/register"
 payload = {
     "nombre": "Juan",
     "apellidos": "Pérez García",
@@ -92,7 +92,7 @@ print(response.json())
 ```
 
 ```javascript JavaScript
-fetch('https://api.alerta-ciudadana.com/register', {
+fetch('http://localhost:8000/register', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
