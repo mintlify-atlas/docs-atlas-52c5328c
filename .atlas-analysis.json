@@ -1,0 +1,128 @@
+{
+  "projectType": "api-service",
+  "projectName": "Alerta Ciudadana API",
+  "projectDescription": "REST API for reporting and managing urban incidents with ML-powered priority classification and critical zone detection",
+  "theme": "aspen",
+  "primaryColor": "#DC2626",
+  "lightColor": "#FCA5A5",
+  "darkColor": "#991B1B",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/architecture",
+              "concepts/authentication",
+              "concepts/data-models"
+            ]
+          },
+          {
+            "group": "Machine Learning",
+            "pages": [
+              "ml/priority-classification",
+              "ml/critical-zones"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Authentication",
+            "pages": [
+              "api/auth/register",
+              "api/auth/login"
+            ]
+          },
+          {
+            "group": "Incidents",
+            "pages": [
+              "api/incidents/list",
+              "api/incidents/get",
+              "api/incidents/create",
+              "api/incidents/update",
+              "api/incidents/delete",
+              "api/incidents/priority"
+            ]
+          },
+          {
+            "group": "Users",
+            "pages": [
+              "api/users/list",
+              "api/users/get",
+              "api/users/update",
+              "api/users/delete"
+            ]
+          },
+          {
+            "group": "Categories",
+            "pages": [
+              "api/categories/list",
+              "api/categories/get",
+              "api/categories/create",
+              "api/categories/update",
+              "api/categories/delete"
+            ]
+          },
+          {
+            "group": "Comments",
+            "pages": [
+              "api/comments/list",
+              "api/comments/get",
+              "api/comments/create",
+              "api/comments/update",
+              "api/comments/delete"
+            ]
+          },
+          {
+            "group": "ML Endpoints",
+            "pages": [
+              "api/ml/critical-zones"
+            ]
+          },
+          {
+            "group": "Data Generation",
+            "pages": [
+              "api/data/generate-all",
+              "api/data/generate-users",
+              "api/data/generate-incidents",
+              "api/data/generate-comments"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "JWT-based authentication and authorization",
+    "Complete CRUD operations for incidents, users, categories, and comments",
+    "ML-based incident priority classification using TF-IDF",
+    "DBSCAN clustering for critical zone detection",
+    "Geolocation support with latitude/longitude coordinates",
+    "Test data generation endpoints"
+  ],
+  "publicApiSurface": [
+    "POST /register - User registration",
+    "POST /login - User authentication",
+    "GET /incidentes/ - List incidents",
+    "POST /incidente/ - Create incident",
+    "GET /incidentes_prioridad - Get incidents with ML priority",
+    "GET /ml/zonas-criticas - Detect critical zones using DBSCAN",
+    "GET /usuarios/ - List users (authenticated)",
+    "GET /categorias/ - List categories",
+    "GET /comentarios/ - List comments",
+    "POST /generar-datos/ - Generate test data"
+  ]
+}
